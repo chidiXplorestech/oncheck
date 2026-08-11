@@ -1,0 +1,20 @@
+{
+  "name": "ONCHECK",
+  "short_name": "ONCHECK",
+  "description": "A private-feeling personal operating system for goals, training, focus and planning.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07111a",
+  "theme_color": "#07111a",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "./oncheck-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
