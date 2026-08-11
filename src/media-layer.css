@@ -1,0 +1,227 @@
+.media-strip {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+}
+
+.db-media-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  cursor: default;
+  scroll-snap-align: start;
+}
+
+button.db-media-thumb {
+  cursor: pointer;
+}
+
+.db-media-thumb img,
+.db-media-thumb video,
+.db-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cover .db-cover-image,
+.preview-cover .db-cover-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.preview-cover em {
+  position: relative;
+  z-index: 2;
+}
+
+.preview-cover {
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, transparent 55%, rgba(5,12,18,.56));
+  pointer-events: none;
+}
+
+.db-media-item {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+}
+
+.db-media-item > img,
+.db-media-item > video {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.db-media-meta {
+  position: absolute;
+  left: 12px;
+  right: 48px;
+  bottom: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  background: rgba(4,11,16,.74);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.db-media-meta span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: rgba(255,255,255,.9);
+}
+
+.db-media-meta small {
+  flex: 0 0 auto;
+  color: rgba(255,255,255,.48);
+}
+
+.db-media-delete {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  background: rgba(4,11,16,.78) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.media-picker-modal {
+  width: min(980px, calc(100vw - 48px));
+  max-height: min(780px, calc(100vh - 48px));
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px;
+  color: #f5f7f9;
+  background: rgba(7,15,22,.96);
+  box-shadow: 0 30px 100px rgba(0,0,0,.55);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+}
+
+.media-picker-modal::backdrop {
+  background: rgba(0,0,0,.68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.media-picker-panel {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.media-picker-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.media-picker-head h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 520;
+  letter-spacing: -.03em;
+}
+
+.media-picker-head p,
+.media-picker-empty {
+  margin: 0;
+  color: rgba(255,255,255,.52);
+}
+
+.media-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.media-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.media-picker-option {
+  display: grid;
+  grid-template-rows: 120px auto;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  color: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.025);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.media-picker-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(116,169,255,.42);
+  background: rgba(116,169,255,.07);
+}
+
+.media-picker-option img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.media-picker-option span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.media-picker-empty {
+  grid-column: 1 / -1;
+  padding: 44px 20px;
+  border: 1px dashed rgba(255,255,255,.12);
+  border-radius: 16px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .media-picker-modal {
+    width: calc(100vw - 24px);
+  }
+
+  .media-picker-panel {
+    padding: 18px;
+  }
+
+  .media-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
