@@ -1,0 +1,127 @@
+/* ONCHECK mobile system — loaded after the core styles. */
+
+:root{--mobile-nav-h:72px}
+
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior-y:none}
+button,input,select,textarea{touch-action:manipulation}
+button,.nav-btn,.tab,.cover,.plan-block,.media-add,.media-thumb,.workout-check,.training-day{min-height:44px}
+
+.mobile-install{
+  position:fixed;right:18px;top:18px;z-index:90;border:1px solid #334653;background:#0b151ee8;
+  color:#f5f7f8;padding:10px 13px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.12em;
+  backdrop-filter:blur(16px);box-shadow:0 12px 30px #0007;cursor:pointer
+}
+.mobile-install[hidden]{display:none}
+.install-sheet{width:min(420px,calc(100vw - 28px));border:1px solid #2a3d4b;background:#0b151e;color:#fff;border-radius:18px;padding:0;overflow:hidden}
+.install-sheet::backdrop{background:#02070ccc;backdrop-filter:blur(8px)}
+.install-sheet>div{padding:22px}.install-sheet h2{font-size:22px;font-weight:500;margin:3px 0 8px}.install-sheet p{color:#93a5b3;line-height:1.6;font-size:13px}.install-sheet span{font-size:9px;letter-spacing:.18em;color:#7faeff}.install-sheet button{width:100%;border:0;border-radius:10px;padding:12px;background:#f2f5f7;color:#07111a;font-weight:800;margin-top:8px}
+
+@media (max-width:1100px){
+  .overview-grid{grid-template-columns:minmax(0,1fr) 300px}
+  .editor-layout{grid-template-columns:minmax(0,1fr) 310px}
+  .goal-row{grid-template-columns:38px minmax(0,1fr) 120px 84px 38px}
+  .media-grid{grid-template-columns:repeat(3,minmax(150px,1fr))}
+}
+
+@media (max-width:860px){
+  html,body,#app{min-height:100%;min-height:100dvh}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  .shell{display:block;height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom))}
+  .workspace{min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:24px}
+
+  .sidebar{
+    position:fixed;z-index:80;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));height:62px;
+    padding:7px;background:#08121bee;border:1px solid #263845;border-radius:16px;display:block;
+    box-shadow:0 14px 40px #000a;backdrop-filter:blur(22px)
+  }
+  .brand,.side-quote,.profile{display:none!important}
+  .sidebar nav{height:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .nav-btn{height:100%;padding:0 5px;border-radius:11px;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:9px;letter-spacing:.02em}
+  .nav-btn span{width:auto;font-size:15px;line-height:1}
+  .nav-btn:hover{background:transparent}.nav-btn.active{background:#17314a;color:#fff}
+
+  .hero{height:190px}
+  .hero-blur{right:3%;transform:scale(.8) rotate(-8deg)}
+  .hero-copy{left:20px;right:20px;bottom:24px}
+  .hero-copy h1{font-size:clamp(29px,8vw,38px);line-height:1.02}
+  .hero-copy p{font-size:9px;line-height:1.5}
+
+  .overview-grid{grid-template-columns:1fr;padding:12px;gap:12px}
+  .toolbar{align-items:stretch;gap:10px;flex-direction:column}
+  .tabs{overflow-x:auto;padding-bottom:2px;scrollbar-width:none;white-space:nowrap}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto}
+  .toolbar>.primary{width:100%;min-height:46px}
+
+  .goal-row{
+    grid-template-columns:34px minmax(0,1fr) 40px;
+    grid-template-areas:"check main menu" ". progress progress" ". cover cover";
+    gap:8px 10px;padding:12px;min-height:unset;border-radius:12px
+  }
+  .goal-row>.round-check{grid-area:check;align-self:start;margin-top:2px}
+  .goal-main{grid-area:main;min-width:0}
+  .goal-main h3{font-size:15px;line-height:1.3;margin-bottom:6px}
+  .goal-main>div{gap:8px;flex-wrap:wrap}
+  .goal-progress{grid-area:progress;padding:2px 0 4px}
+  .goal-progress>div{margin-top:5px}
+  .goal-row>.cover{grid-area:cover;width:100%;height:92px}
+  .goal-row>.icon-btn{grid-area:menu;align-self:start}
+  .round-check{width:30px;height:30px}
+
+  .right-rail{display:grid;grid-template-columns:1fr;gap:0}
+  .focus-card{height:230px}.focus-overlay{padding:20px}.focus-overlay h2{font-size:26px}.focus-overlay p{max-width:65%}
+  .side-card{border-radius:12px;padding:16px}
+  .stats b{font-size:19px}
+  .media-strip{grid-template-columns:repeat(5,minmax(52px,1fr));overflow-x:auto}
+
+  .page-wrap{padding:18px 12px 92px}
+  .page-head{flex-direction:column;gap:14px;margin-bottom:16px}
+  .page-head h1{font-size:30px}.page-head>button,.head-actions{width:100%}.head-actions>*{flex:1}
+  .editor-layout{display:flex;flex-direction:column;gap:12px}
+  .editor-aside{order:-1}
+  .preview-card{padding:12px}.preview-cover{height:175px}.preview-card h2{font-size:21px}
+  .editor-card{padding:14px}
+  .form-grid.two,.form-grid.three,.form-grid.four{grid-template-columns:1fr}
+  .form-grid{gap:10px;margin-bottom:10px}
+  input,select,textarea{font-size:16px;min-height:44px} /* Prevent iOS zoom */
+  textarea{min-height:96px}
+  .section-head{align-items:flex-start;gap:10px}.section-head .text-btn{white-space:nowrap}
+  .task-row{grid-template-columns:32px minmax(0,1fr) 38px}
+  .form-actions{flex-direction:column;align-items:stretch;gap:12px}.form-actions>.primary{width:100%}
+
+  .calendar-page{padding:0 10px 100px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .calendar-hero{height:160px;margin:0 -10px 12px;padding:22px 18px;align-items:flex-end;gap:12px}
+  .calendar-hero h1{font-size:30px}.calendar-hero p{font-size:11px}.calendar-hero>.primary{white-space:nowrap}
+  .calendar-shell{min-width:820px;grid-template-columns:58px repeat(7,minmax(108px,1fr));border-radius:10px}
+  .calendar-page:after{content:"SWIPE →";position:sticky;left:12px;bottom:82px;display:inline-block;margin:10px 0;padding:7px 9px;background:#07111acc;border:1px solid #2b3d49;border-radius:999px;color:#8ea0ad;font-size:8px;letter-spacing:.16em;pointer-events:none}
+
+  .media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .media-item,.media-add{border-radius:10px}
+  .modal{width:calc(100vw - 24px);max-height:88dvh;overflow:auto;border-radius:16px;padding:16px}
+  .modal-actions{gap:10px}.modal-actions>div{display:flex;gap:7px}
+
+  .mobile-install{right:14px;top:12px;padding:9px 11px;background:#07111ae8}
+}
+
+@media (max-width:520px){
+  .overview-grid{padding:9px}
+  .hero{height:174px}.hero-copy{left:16px;bottom:20px}.hero-copy h1{font-size:29px}
+  .goal-row{padding:11px 10px}.goal-row>.cover{height:76px}
+  .focus-card{height:210px}.focus-overlay h2{font-size:23px}.ring{width:48px;height:48px}
+  .stats{gap:5px}.stats span{font-size:8px}
+  .page-wrap{padding-left:10px;padding-right:10px}
+  .page-head h1{font-size:28px}
+  .preview-cover{height:155px}
+  .editor-section{padding:11px;margin:14px 0}
+  .media-grid{grid-template-columns:1fr 1fr}
+  .media-item,.media-add{aspect-ratio:1/1}
+  .milestone{grid-template-columns:9px minmax(0,1fr) auto}.milestone time{font-size:8px}
+  .calendar-hero{flex-direction:column;align-items:flex-start;justify-content:flex-end}.calendar-hero>.primary{width:100%}
+}
+
+@media (display-mode:standalone){
+  body{user-select:none;-webkit-user-select:none}
+  input,textarea{user-select:text;-webkit-user-select:text}
+  .mobile-install{display:none!important}
+}
