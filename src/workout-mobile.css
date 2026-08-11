@@ -1,0 +1,67 @@
+/* Mobile overrides for the dynamic Training Space. */
+@media (max-width:860px){
+  .training-space{margin-top:12px;padding:14px!important;border-radius:12px!important;overflow:hidden}
+  .training-kicker{font-size:8px;letter-spacing:.16em;gap:10px}
+  .training-head{display:flex!important;flex-direction:column;align-items:flex-start!important;gap:14px;margin:16px 0}
+  .training-head h2{font-size:30px!important;line-height:1!important;margin:0 0 8px!important}
+  .training-head p{font-size:11px!important;line-height:1.6!important;max-width:100%!important}
+  .training-week-score{align-self:flex-end;margin-top:-58px}
+
+  .training-days{display:flex!important;gap:7px!important;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity;scrollbar-width:none}
+  .training-days::-webkit-scrollbar{display:none}
+  .training-day{flex:0 0 145px!important;min-width:145px!important;padding:11px!important;scroll-snap-align:start}
+  .training-day span{font-size:8px!important}.training-day strong{font-size:12px!important}.training-day em{font-size:9px!important}
+
+  .training-session-head{display:flex!important;flex-direction:column;align-items:stretch!important;gap:12px!important;margin:18px 0 10px}
+  .training-session-head h3{font-size:16px!important;line-height:1.35!important}
+  .session-progress{width:100%!important;min-width:0!important}
+  .session-progress>div{width:100%!important}
+
+  .explosive-slot{display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;gap:10px!important;padding:13px!important}
+  .explosive-slot>div{min-width:0}
+  .explosive-slot strong{font-size:13px!important;line-height:1.35!important;display:block}
+  .explosive-slot small{font-size:9px!important;line-height:1.5!important}
+  .explosive-slot>.workout-ghost{grid-column:2;width:100%;margin-top:2px}
+
+  .exercise-groups{gap:12px!important}
+  .exercise-group{border-radius:10px!important;overflow:hidden}
+  .exercise-group-label{padding:10px 11px!important}
+  .exercise-row{display:grid!important;grid-template-columns:34px minmax(0,1fr) 38px!important;gap:8px!important;padding:10px 9px!important;align-items:center!important}
+  .exercise-copy{text-align:left!important;min-width:0!important;padding:0!important}
+  .exercise-copy strong{font-size:13px!important;line-height:1.35!important;white-space:normal!important}
+  .exercise-copy span{font-size:10px!important;margin-top:3px!important}
+  .exercise-copy small{font-size:9px!important;line-height:1.45!important;white-space:normal!important}
+  .workout-check{width:32px!important;height:32px!important;min-height:32px!important}
+  .exercise-more{width:38px!important;height:42px!important}
+
+  .training-footer{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important;margin-top:14px!important}
+  .training-footer>div{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .workout-add,.training-footer .workout-ghost,.training-footer .workout-next{width:100%!important;min-height:46px!important}
+  .training-note{display:grid!important;grid-template-columns:1fr!important;gap:5px!important;padding:12px!important}
+  .training-note p{font-size:10px!important;line-height:1.55!important}
+
+  .workout-modal{width:calc(100vw - 20px)!important;max-height:90dvh!important;padding:0!important;overflow:auto!important;border-radius:16px!important}
+  .workout-modal-panel{padding:16px!important}
+  .workout-modal-head{gap:10px}.workout-modal-head h2{font-size:21px!important}
+  .workout-modal input,.workout-modal textarea{font-size:16px!important;min-height:44px!important}
+  .workout-modal-actions{display:flex!important;flex-direction:column-reverse!important;gap:9px!important;align-items:stretch!important}
+  .workout-modal-actions>div{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .workout-modal-actions button{min-height:44px!important}
+  .explosive-picker{grid-template-columns:1fr!important;max-height:58dvh!important;overflow:auto!important}
+
+  .media-picker-modal{width:calc(100vw - 20px)!important;max-height:90dvh!important}
+  .media-picker-panel{padding:14px!important}
+  .media-picker-head{align-items:flex-start!important;gap:10px}.media-picker-head h2{font-size:22px!important}
+  .media-picker-actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .media-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;max-height:52dvh!important;overflow:auto!important}
+}
+
+@media (max-width:480px){
+  .training-space{padding:11px!important;margin-left:-2px;margin-right:-2px}
+  .training-head h2{font-size:27px!important}
+  .training-week-score{margin-top:-54px}
+  .training-day{flex-basis:132px!important;min-width:132px!important}
+  .exercise-row{grid-template-columns:32px minmax(0,1fr) 34px!important;padding-left:7px!important;padding-right:7px!important}
+  .training-footer>div{grid-template-columns:1fr!important}
+  .media-picker-grid{grid-template-columns:1fr 1fr!important}
+}
