@@ -27,6 +27,12 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Install Chromium for UI regression tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser regression tests
+        run: npm run test:e2e
+
       - name: Single-file offline build
         run: npm run build:offline
 

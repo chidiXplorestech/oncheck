@@ -1,7 +1,7 @@
 {
   "name": "oncheck",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,9 +9,11 @@
     "build": "tsc -b && vite build",
     "build:offline": "tsc -b && vite build --base=./ && node scripts/build-offline.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "latest",
     "typescript": "^5.9.2",
     "vite": "^7.1.1"
   }

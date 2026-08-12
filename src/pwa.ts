@@ -1,6 +1,6 @@
 import './mobile.css';
 import './workout-mobile.css';
-import './responsive-v2.css';
+import './system-mobile.css';
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;

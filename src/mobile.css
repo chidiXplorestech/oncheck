@@ -1,127 +1,668 @@
-/* ONCHECK mobile system — loaded after the core styles. */
+/*
+  ONCHECK mobile layer
+  IMPORTANT: every layout override is scoped below 900px (or phone landscape).
+  Desktop styling remains owned entirely by styles.css / workout.css.
+*/
 
-:root{--mobile-nav-h:72px}
+@media (max-width: 900px) {
+  :root { --mobile-nav-h: 72px; }
 
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{overscroll-behavior-y:none}
-button,input,select,textarea{touch-action:manipulation}
-button,.nav-btn,.tab,.cover,.plan-block,.media-add,.media-thumb,.workout-check,.training-day{min-height:44px}
-
-.mobile-install{
-  position:fixed;right:18px;top:18px;z-index:90;border:1px solid #334653;background:#0b151ee8;
-  color:#f5f7f8;padding:10px 13px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.12em;
-  backdrop-filter:blur(16px);box-shadow:0 12px 30px #0007;cursor:pointer
-}
-.mobile-install[hidden]{display:none}
-.install-sheet{width:min(420px,calc(100vw - 28px));border:1px solid #2a3d4b;background:#0b151e;color:#fff;border-radius:18px;padding:0;overflow:hidden}
-.install-sheet::backdrop{background:#02070ccc;backdrop-filter:blur(8px)}
-.install-sheet>div{padding:22px}.install-sheet h2{font-size:22px;font-weight:500;margin:3px 0 8px}.install-sheet p{color:#93a5b3;line-height:1.6;font-size:13px}.install-sheet span{font-size:9px;letter-spacing:.18em;color:#7faeff}.install-sheet button{width:100%;border:0;border-radius:10px;padding:12px;background:#f2f5f7;color:#07111a;font-weight:800;margin-top:8px}
-
-@media (max-width:1100px){
-  .overview-grid{grid-template-columns:minmax(0,1fr) 300px}
-  .editor-layout{grid-template-columns:minmax(0,1fr) 310px}
-  .goal-row{grid-template-columns:38px minmax(0,1fr) 120px 84px 38px}
-  .media-grid{grid-template-columns:repeat(3,minmax(150px,1fr))}
-}
-
-@media (max-width:860px){
-  html,body,#app{min-height:100%;min-height:100dvh}
-  body{padding-bottom:env(safe-area-inset-bottom)}
-  .shell{display:block;height:auto;min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom))}
-  .workspace{min-height:100vh;min-height:100dvh;overflow:visible;padding-bottom:24px}
-
-  .sidebar{
-    position:fixed;z-index:80;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));height:62px;
-    padding:7px;background:#08121bee;border:1px solid #263845;border-radius:16px;display:block;
-    box-shadow:0 14px 40px #000a;backdrop-filter:blur(22px)
+  html,
+  body,
+  #app {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
-  .brand,.side-quote,.profile{display:none!important}
-  .sidebar nav{height:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-  .nav-btn{height:100%;padding:0 5px;border-radius:11px;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:9px;letter-spacing:.02em}
-  .nav-btn span{width:auto;font-size:15px;line-height:1}
-  .nav-btn:hover{background:transparent}.nav-btn.active{background:#17314a;color:#fff}
 
-  .hero{height:190px}
-  .hero-blur{right:3%;transform:scale(.8) rotate(-8deg)}
-  .hero-copy{left:20px;right:20px;bottom:24px}
-  .hero-copy h1{font-size:clamp(29px,8vw,38px);line-height:1.02}
-  .hero-copy p{font-size:9px;line-height:1.5}
-
-  .overview-grid{grid-template-columns:1fr;padding:12px;gap:12px}
-  .toolbar{align-items:stretch;gap:10px;flex-direction:column}
-  .tabs{overflow-x:auto;padding-bottom:2px;scrollbar-width:none;white-space:nowrap}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{flex:0 0 auto}
-  .toolbar>.primary{width:100%;min-height:46px}
-
-  .goal-row{
-    grid-template-columns:34px minmax(0,1fr) 40px;
-    grid-template-areas:"check main menu" ". progress progress" ". cover cover";
-    gap:8px 10px;padding:12px;min-height:unset;border-radius:12px
+  body {
+    margin: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: none;
   }
-  .goal-row>.round-check{grid-area:check;align-self:start;margin-top:2px}
-  .goal-main{grid-area:main;min-width:0}
-  .goal-main h3{font-size:15px;line-height:1.3;margin-bottom:6px}
-  .goal-main>div{gap:8px;flex-wrap:wrap}
-  .goal-progress{grid-area:progress;padding:2px 0 4px}
-  .goal-progress>div{margin-top:5px}
-  .goal-row>.cover{grid-area:cover;width:100%;height:92px}
-  .goal-row>.icon-btn{grid-area:menu;align-self:start}
-  .round-check{width:30px;height:30px}
 
-  .right-rail{display:grid;grid-template-columns:1fr;gap:0}
-  .focus-card{height:230px}.focus-overlay{padding:20px}.focus-overlay h2{font-size:26px}.focus-overlay p{max-width:65%}
-  .side-card{border-radius:12px;padding:16px}
-  .stats b{font-size:19px}
-  .media-strip{grid-template-columns:repeat(5,minmax(52px,1fr));overflow-x:auto}
+  button,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+    touch-action: manipulation;
+  }
 
-  .page-wrap{padding:18px 12px 92px}
-  .page-head{flex-direction:column;gap:14px;margin-bottom:16px}
-  .page-head h1{font-size:30px}.page-head>button,.head-actions{width:100%}.head-actions>*{flex:1}
-  .editor-layout{display:flex;flex-direction:column;gap:12px}
-  .editor-aside{order:-1}
-  .preview-card{padding:12px}.preview-cover{height:175px}.preview-card h2{font-size:21px}
-  .editor-card{padding:14px}
-  .form-grid.two,.form-grid.three,.form-grid.four{grid-template-columns:1fr}
-  .form-grid{gap:10px;margin-bottom:10px}
-  input,select,textarea{font-size:16px;min-height:44px} /* Prevent iOS zoom */
-  textarea{min-height:96px}
-  .section-head{align-items:flex-start;gap:10px}.section-head .text-btn{white-space:nowrap}
-  .task-row{grid-template-columns:32px minmax(0,1fr) 38px}
-  .form-actions{flex-direction:column;align-items:stretch;gap:12px}.form-actions>.primary{width:100%}
+  button,
+  .nav-btn,
+  .tab,
+  .cover,
+  .plan-block,
+  .media-add,
+  .media-thumb,
+  .text-btn,
+  .primary,
+  .secondary,
+  .danger {
+    min-height: 44px;
+  }
 
-  .calendar-page{padding:0 10px 100px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .calendar-hero{height:160px;margin:0 -10px 12px;padding:22px 18px;align-items:flex-end;gap:12px}
-  .calendar-hero h1{font-size:30px}.calendar-hero p{font-size:11px}.calendar-hero>.primary{white-space:nowrap}
-  .calendar-shell{min-width:820px;grid-template-columns:58px repeat(7,minmax(108px,1fr));border-radius:10px}
-  .calendar-page:after{content:"SWIPE →";position:sticky;left:12px;bottom:82px;display:inline-block;margin:10px 0;padding:7px 9px;background:#07111acc;border:1px solid #2b3d49;border-radius:999px;color:#8ea0ad;font-size:8px;letter-spacing:.16em;pointer-events:none}
+  .shell {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+    padding-bottom: calc(var(--mobile-nav-h) + 18px + env(safe-area-inset-bottom));
+  }
 
-  .media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-  .media-item,.media-add{border-radius:10px}
-  .modal{width:calc(100vw - 24px);max-height:88dvh;overflow:auto;border-radius:16px;padding:16px}
-  .modal-actions{gap:10px}.modal-actions>div{display:flex;gap:7px}
+  .workspace {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+    padding-bottom: 18px;
+  }
 
-  .mobile-install{right:14px;top:12px;padding:9px 11px;background:#07111ae8}
+  /* Bottom navigation replaces, rather than shrinks, the desktop sidebar. */
+  .sidebar {
+    position: fixed;
+    z-index: 90;
+    left: 9px;
+    right: 9px;
+    bottom: max(9px, env(safe-area-inset-bottom));
+    width: auto;
+    height: 64px;
+    padding: 6px;
+    display: block;
+    border: 1px solid #263845;
+    border-radius: 16px;
+    background: #08121bee;
+    box-shadow: 0 14px 40px #000a;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  .brand,
+  .side-quote,
+  .profile {
+    display: none !important;
+  }
+
+  .sidebar nav {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .nav-btn {
+    min-width: 0;
+    height: 100%;
+    padding: 0 4px;
+    border-radius: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 9px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .nav-btn span {
+    width: auto;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  /* Overview */
+  .hero {
+    width: 100%;
+    height: 184px;
+  }
+
+  .hero-blur {
+    width: 250px;
+    height: 300px;
+    right: -12px;
+    top: -46px;
+    transform: rotate(-8deg);
+  }
+
+  .hero-copy {
+    left: 18px;
+    right: 18px;
+    bottom: 22px;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 7px;
+    font-size: clamp(29px, 8vw, 38px);
+    line-height: 1.02;
+  }
+
+  .hero-copy p {
+    max-width: 270px;
+    font-size: 9px;
+    line-height: 1.5;
+    letter-spacing: .17em;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .goal-panel,
+  .right-rail {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+  }
+
+  .toolbar > .primary {
+    width: 100%;
+  }
+
+  .goal-list { gap: 8px; }
+
+  .goal-row {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "check main menu"
+      ". progress progress"
+      ". cover cover";
+    gap: 8px 10px;
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .goal-row > .round-check {
+    grid-area: check;
+    align-self: start;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    margin-top: 1px;
+  }
+
+  .goal-main {
+    grid-area: main;
+    min-width: 0;
+  }
+
+  .goal-main h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .goal-main > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 10px;
+  }
+
+  .goal-progress {
+    grid-area: progress;
+    padding: 1px 0 4px;
+  }
+
+  .goal-progress > div { margin-top: 5px; }
+
+  .goal-row > .cover {
+    grid-area: cover;
+    width: 100%;
+    height: 88px;
+  }
+
+  .goal-row > .icon-btn {
+    grid-area: menu;
+    align-self: start;
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+  }
+
+  .right-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .focus-card {
+    height: 225px;
+  }
+
+  .focus-overlay { padding: 20px; }
+  .focus-overlay h2 { font-size: 26px; }
+  .focus-overlay p { max-width: 68%; }
+
+  .side-card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .stats { gap: 7px; }
+  .stats b { font-size: 20px; }
+
+  .milestone {
+    grid-template-columns: 9px minmax(0, 1fr) auto;
+  }
+
+  .milestone time {
+    white-space: nowrap;
+    font-size: 8px;
+  }
+
+  .media-strip {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .media-strip::-webkit-scrollbar { display: none; }
+
+  .media-thumb {
+    flex: 0 0 58px;
+    width: 58px;
+  }
+
+  /* Goal editor */
+  .page-wrap {
+    width: 100%;
+    padding: 18px 12px calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .page-head {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .page-head h1 {
+    margin: 6px 0;
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  .head-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .head-actions > * { width: 100%; }
+
+  .editor-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .editor-layout > section,
+  .editor-aside { min-width: 0; }
+
+  .editor-aside {
+    order: -1;
+    width: 100%;
+  }
+
+  .preview-card,
+  .editor-card { padding: 14px; }
+
+  .preview-cover { height: 178px; }
+  .preview-card h2 { font-size: 22px; }
+
+  .form-grid,
+  .form-grid.two,
+  .form-grid.three,
+  .form-grid.four {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  label { min-width: 0; }
+
+  input,
+  select,
+  textarea {
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 11px;
+    font-size: 16px; /* prevents iOS form zoom */
+  }
+
+  textarea { min-height: 96px; }
+
+  .section-head {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .section-head .text-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .task-row {
+    grid-template-columns: 32px minmax(0, 1fr) 38px;
+    gap: 7px;
+  }
+
+  .task-row input {
+    min-height: 42px;
+    padding: 8px;
+  }
+
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 11px;
+  }
+
+  .form-actions > .primary { width: 100%; }
+
+  /* Calendar intentionally scrolls horizontally on portrait mobile.
+     Seven readable columns are more useful than seven crushed columns. */
+  .calendar-page {
+    width: 100%;
+    padding: 0 10px calc(96px + env(safe-area-inset-bottom));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .calendar-hero {
+    height: auto;
+    min-height: 164px;
+    margin: 0 -10px 12px;
+    padding: 21px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .calendar-hero h1 {
+    margin: 6px 0;
+    font-size: 31px;
+    line-height: 1;
+  }
+
+  .calendar-hero p { font-size: 11px; }
+  .calendar-hero > .primary { width: 100%; }
+
+  .calendar-shell {
+    min-width: 820px;
+    grid-template-columns: 58px repeat(7, minmax(108px, 1fr));
+  }
+
+  /* Media */
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .media-item,
+  .media-add {
+    min-width: 0;
+    aspect-ratio: 1;
+  }
+
+  .media-item img,
+  .media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Existing dialogs */
+  .modal {
+    width: calc(100vw - 22px);
+    max-width: none;
+    max-height: 90dvh;
+    overflow: auto;
+    padding: 16px;
+  }
+
+  .modal-actions {
+    gap: 9px;
+  }
+
+  .modal-actions > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  /* PWA install UI exists only on small screens. */
+  .mobile-install {
+    position: fixed;
+    z-index: 95;
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+    min-height: 40px;
+    border: 1px solid #334653;
+    border-radius: 999px;
+    padding: 9px 11px;
+    background: #0b151ee8;
+    color: #f5f7f8;
+    box-shadow: 0 12px 30px #0007;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .1em;
+  }
+
+  .mobile-install[hidden] { display: none; }
+
+  .install-sheet {
+    width: min(420px, calc(100vw - 24px));
+    max-height: 86dvh;
+    overflow: auto;
+    border: 1px solid #2a3d4b;
+    border-radius: 16px;
+    padding: 0;
+    background: #0b151e;
+    color: #fff;
+  }
+
+  .install-sheet::backdrop {
+    background: #02070ccc;
+    backdrop-filter: blur(8px);
+  }
+
+  .install-sheet > div { padding: 20px; }
+  .install-sheet h2 { margin: 4px 0 8px; font-size: 22px; }
+  .install-sheet p { font-size: 13px; line-height: 1.6; color: #93a5b3; }
+  .install-sheet span { font-size: 9px; letter-spacing: .16em; color: #7faeff; }
+  .install-sheet button { width: 100%; min-height: 44px; }
 }
 
-@media (max-width:520px){
-  .overview-grid{padding:9px}
-  .hero{height:174px}.hero-copy{left:16px;bottom:20px}.hero-copy h1{font-size:29px}
-  .goal-row{padding:11px 10px}.goal-row>.cover{height:76px}
-  .focus-card{height:210px}.focus-overlay h2{font-size:23px}.ring{width:48px;height:48px}
-  .stats{gap:5px}.stats span{font-size:8px}
-  .page-wrap{padding-left:10px;padding-right:10px}
-  .page-head h1{font-size:28px}
-  .preview-cover{height:155px}
-  .editor-section{padding:11px;margin:14px 0}
-  .media-grid{grid-template-columns:1fr 1fr}
-  .media-item,.media-add{aspect-ratio:1/1}
-  .milestone{grid-template-columns:9px minmax(0,1fr) auto}.milestone time{font-size:8px}
-  .calendar-hero{flex-direction:column;align-items:flex-start;justify-content:flex-end}.calendar-hero>.primary{width:100%}
+/* Roomier phones / small tablets. */
+@media (min-width: 521px) and (max-width: 900px) {
+  .overview-grid { padding: 14px; }
+  .goal-row {
+    grid-template-columns: 36px minmax(0, 1fr) 128px 38px;
+    grid-template-areas:
+      "check main cover menu"
+      ". progress cover menu";
+    align-items: center;
+  }
+  .goal-row > .cover { height: 70px; }
+  .editor-aside { order: 0; }
+  .media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .form-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (display-mode:standalone){
-  body{user-select:none;-webkit-user-select:none}
-  input,textarea{user-select:text;-webkit-user-select:text}
-  .mobile-install{display:none!important}
+/* Smallest supported portrait width: 320px. */
+@media (max-width: 360px) {
+  .sidebar { left: 6px; right: 6px; padding: 5px; }
+  .nav-btn { padding-inline: 1px; font-size: 8px; }
+  .nav-btn span { font-size: 14px; }
+
+  .hero { height: 168px; }
+  .hero-copy { left: 14px; right: 14px; bottom: 18px; }
+  .hero-copy h1 { font-size: 28px; }
+
+  .overview-grid { padding: 8px; }
+  .goal-row { padding: 10px 9px; }
+  .goal-row > .cover { height: 72px; }
+
+  .page-wrap { padding-left: 9px; padding-right: 9px; }
+  .page-head h1 { font-size: 28px; }
+  .preview-cover { height: 154px; }
+  .editor-card,
+  .preview-card { padding: 11px; }
+  .editor-section { padding: 10px; }
+
+  .focus-overlay p { max-width: 62%; }
+  .stats b { font-size: 18px; }
+  .milestone time { font-size: 7px; }
+}
+
+/* Phone landscape mode gets a side dock, preserving vertical working space. */
+@media (max-width: 900px) and (max-height: 600px) and (orientation: landscape) {
+  :root { --mobile-nav-h: 0px; }
+
+  .shell {
+    min-height: 100dvh;
+    padding: 0 0 0 78px;
+  }
+
+  .workspace {
+    min-height: 100dvh;
+    padding-bottom: 0;
+  }
+
+  .sidebar {
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    right: auto;
+    width: 62px;
+    height: auto;
+    padding: 6px;
+  }
+
+  .sidebar nav {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .nav-btn {
+    width: 100%;
+    height: auto;
+    min-height: 48px;
+    font-size: 7px;
+  }
+
+  .hero { height: 150px; }
+  .hero-copy h1 { font-size: 30px; }
+
+  .overview-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, .72fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .goal-row {
+    grid-template-columns: 30px minmax(0, 1fr) 100px 36px;
+    grid-template-areas:
+      "check main cover menu"
+      ". progress cover menu";
+    padding: 9px;
+  }
+
+  .goal-row > .cover { height: 62px; }
+
+  .right-rail { align-content: start; }
+  .focus-card { height: 184px; }
+  .side-card { padding: 13px; }
+
+  .page-wrap {
+    padding-bottom: 16px;
+  }
+
+  .editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    align-items: start;
+  }
+
+  .editor-aside { order: 0; }
+  .preview-cover { height: 160px; }
+
+  .calendar-page {
+    padding-bottom: 16px;
+  }
+
+  .calendar-hero {
+    min-height: 128px;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .calendar-hero > .primary {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .media-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mobile-install {
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media (max-width: 900px) and (display-mode: standalone) {
+  .mobile-install { display: none !important; }
 }
