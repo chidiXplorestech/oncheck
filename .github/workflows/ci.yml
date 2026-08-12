@@ -26,3 +26,9 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Single-file offline build
+        run: npm run build:offline
+
+      - name: Verify offline artifact
+        run: test -s dist/oncheck-offline.html
