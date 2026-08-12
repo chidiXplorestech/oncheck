@@ -32,3 +32,11 @@ jobs:
 
       - name: Verify offline artifact
         run: test -s dist/oncheck-offline.html
+
+      - name: Upload offline phone build
+        uses: actions/upload-artifact@v4
+        with:
+          name: oncheck-offline
+          path: dist/oncheck-offline.html
+          if-no-files-found: error
+          retention-days: 30
