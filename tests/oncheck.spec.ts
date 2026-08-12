@@ -151,3 +151,57 @@ test('Training remains interactive and contained at 320px', async ({ page }) => 
   await firstExercise.locator('.workout-check').click();
   await expect(firstExercise).toHaveClass(/done/);
 });
+
+test('calendar uses real current-week dates and anchors strategy tracking in August 2026', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.locator('[data-nav="calendar"]').click();
+
+  await expect(page.locator('.calendar-strategy-meta')).toContainText('10 AUG 2026');
+  const storedStart = await page.evaluate(() => localStorage.getItem('oncheck-strategy-start-v1'));
+  expect(storedStart).toBe('2026-08-10');
+
+  const expectedDates = await page.evaluate(() => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    const day = now.getDay();
+    now.setDate(now.getDate() + (day === 0 ? -6 : 1 - day));
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(now);
+      date.setDate(now.getDate() + index);
+      return String(date.getDate());
+    });
+  });
+  await expect(page.locator('.day-head span')).toHaveText(expectedDates);
+});
+
+test('calendar can create, edit, complete and persist a weekly execution log', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.locator('[data-nav="calendar"]').click();
+
+  await page.locator('.day-col').first().click({ position: { x: 50, y: 210 } });
+  await expect(page.locator('.calendar-edit-dialog')).toBeVisible();
+  await page.locator('.calendar-edit-dialog input[name="title"]').fill('Calendar execution test');
+  await page.locator('.calendar-edit-dialog input[name="plannedMinutes"]').fill('75');
+  await page.locator('.calendar-edit-dialog button[value="save"]').click();
+
+  const logRow = page.locator('.calendar-log-row').filter({ hasText: 'Calendar execution test' });
+  await expect(logRow).toHaveCount(1);
+  await logRow.click();
+  await page.locator('.calendar-edit-dialog input[name="done"]').check();
+  await page.locator('.calendar-edit-dialog input[name="actualMinutes"]').fill('68');
+  await page.locator('.calendar-edit-dialog textarea[name="logNote"]').fill('Completed with better focus than expected.');
+  await page.locator('.calendar-edit-dialog button[value="save"]').click();
+
+  const completedRow = page.locator('.calendar-log-row').filter({ hasText: 'Calendar execution test' });
+  await expect(completedRow).toHaveClass(/done/);
+  await expect(completedRow).toContainText('68m actual');
+  await expect(completedRow).toContainText('Completed with better focus than expected.');
+
+  await page.reload();
+  await page.locator('[data-nav="calendar"]').click();
+  const persisted = page.locator('.calendar-log-row').filter({ hasText: 'Calendar execution test' });
+  await expect(persisted).toHaveClass(/done/);
+  await expect(persisted).toContainText('68m actual');
+});
