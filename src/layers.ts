@@ -5,7 +5,7 @@ import './pwa';
 
 document.documentElement.dataset.oncheckLayers = 'ready';
 
-void import('./calendar-layer')
+void import('./calendar-tracker')
   .then(() => {
     document.documentElement.dataset.oncheckCalendarImport = 'ready';
   })
@@ -13,5 +13,5 @@ void import('./calendar-layer')
     const message = error instanceof Error ? error.message : String(error);
     document.documentElement.dataset.oncheckCalendarImport = 'error';
     document.documentElement.dataset.oncheckCalendarError = message;
-    console.error('ONCHECK calendar layer failed to load', error);
+    console.error('ONCHECK calendar tracker failed to load', error);
   });
