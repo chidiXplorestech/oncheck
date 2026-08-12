@@ -1,37 +1,48 @@
 # ONCHECK
 
-ONCHECK is a visual personal operating system for goals, weekly planning, training, progress tracking and media references.
+ONCHECK is a visual personal operating system for goals, daily execution, weekly planning, training, progress tracking and media references.
 
 ## Stack
 
 - TypeScript (strict mode)
 - Vite
-- localStorage for goal/planning state
+- localStorage for core goal/planning/account state
 - IndexedDB for uploaded media
 - Progressive Web App shell for mobile installation/offline reopening
+- Mobile-first responsive layer down to 320px
 - Zero UI framework dependency
 
 ## Functional MVP
 
-- Preloaded 2026–2029 goal system
+- Preloaded long-term goal system
 - Add, edit, duplicate and delete goals
 - Active / on-hold / completed goal states
+- Reliable Save Changes + goal autosave
 - Editable checklists with automatic progress calculation
+- Goal search and status filtering
+- Daily Focus system with capped priorities
+- Low-Energy Mode with a configurable minimum-day target
+- Execution Pulse for goals, weekly blocks and today's priorities
+- Account / Settings area
+- Editable profile name, role and optional email
+- Configurable daily priority limit and low-energy minutes
+- Weekly review with wins, friction, next-week changes and score
+- JSON backup export/import
 - Unlimited app-level media count; browser/device quota is the practical limit
 - Multi-image/video uploads stored in IndexedDB
 - Change/remove goal covers from the media library
-- Weekly planning calendar
+- Weekly planning calendar with current dates
 - Add, edit, complete and delete planning blocks
 - Dynamic Training Space with Monday / Wednesday / Thursday split
 - Editable exercises, checkboxes and rotating explosive movement
-- Goal/status filtering
 - Responsive desktop/tablet/mobile layout
-- Installable mobile PWA
+- Installable PWA
+- Single-file offline build option
 - Persistent local data between refreshes
 
 ## Run from VS Code
 
-Requirements: Node.js 20+ and npm.
+Requirements: Node.js 22+ and npm.
 
 ```bash
 git clone https://github.com/chidiXplorestech/oncheck.git
@@ -55,27 +66,48 @@ npm run dev:mobile
 
 Vite will print a `Network` URL such as `http://192.168.x.x:5173`. Open that URL on your phone while the phone and computer are on the same network.
 
-## Permanent mobile access
+## Netlify
 
-The repository includes `.github/workflows/pages.yml`, which builds and deploys ONCHECK to GitHub Pages. GitHub Pages must be enabled once in the repository:
+The repository includes `netlify.toml` and is ready for a standard Vite deployment.
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, choose **GitHub Actions** as the source.
-3. Re-run **Deploy ONCHECK to GitHub Pages** under the Actions tab, or push any commit.
-
-The expected site address is:
+Build command:
 
 ```text
-https://chidixplorestech.github.io/oncheck/
+npm run build
 ```
 
-When opened on mobile, ONCHECK exposes an install option. On iPhone, open it in Safari and use **Share → Add to Home Screen**. On Android/Chromium, use the ONCHECK install prompt or the browser's **Install app / Add to Home screen** option.
+Publish directory:
+
+```text
+dist
+```
+
+The PWA manifest and service worker are included in the production build.
+
+## Single-file local/offline build
+
+Generate one bundled HTML file:
+
+```bash
+npm run build:offline
+```
+
+Output:
+
+```text
+dist/oncheck-offline.html
+```
+
+GitHub Actions also uploads this file as the `oncheck-offline` build artifact after successful pushes to `main`.
+
+Important: opening local HTML files directly behaves differently across mobile operating systems and browsers. The single-file build removes ONCHECK's normal external JS/CSS asset dependency, but durable browser storage and install/PWA APIs can still depend on the browser environment. For everyday phone use, a hosted PWA remains the most predictable route.
 
 ## Verify before development
 
 ```bash
 npm run typecheck
 npm run build
+npm run build:offline
 ```
 
 ## Production preview
@@ -89,14 +121,20 @@ npm run preview
 
 ```text
 index.html
+netlify.toml
 public/
   manifest.webmanifest
   oncheck-icon.svg
   sw.js
+scripts/
+  build-offline.mjs
 src/
   main.ts
   styles.css
+  app-v2.css
+  responsive-v2.css
   media-layer.ts
+  media-layer.css
   workout-layer.ts
   workout.css
   mobile.css
@@ -109,6 +147,6 @@ vite.config.ts
 
 ## Data and sync
 
-ONCHECK is currently local-first. Goal/planning/training state is stored in the browser and uploaded media is stored in IndexedDB.
+ONCHECK is currently local-first. Goal/planning/account/training state is stored in browser storage and uploaded media is stored in IndexedDB.
 
-This means an installed phone version works independently, but changes made on a laptop do **not** automatically appear on the phone yet. The next architecture step for true cross-device use is authentication + a cloud database + object storage, while keeping an offline local cache for fast mobile use.
+This means phone and laptop installations currently maintain independent local state. Cross-device sync would require a shared backend/auth layer later; it is intentionally not required for the current local-first MVP.
