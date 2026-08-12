@@ -8,6 +8,9 @@ type InstallPromptEvent = Event & {
 };
 
 let deferredPrompt: InstallPromptEvent | null = null;
+let serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
+let controllerSeen = Boolean(navigator.serviceWorker?.controller);
+let reloadingForUpdate = false;
 
 function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -40,10 +43,41 @@ function showIOSInstructions() {
   dialog.showModal();
 }
 
+async function requestServiceWorkerUpdate() {
+  if (!serviceWorkerRegistration) return;
+  try {
+    await serviceWorkerRegistration.update();
+  } catch {
+    // A failed update check should never stop ONCHECK from running offline.
+  }
+}
+
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
+
   try {
-    await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL });
+    serviceWorkerRegistration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+      scope: import.meta.env.BASE_URL,
+      updateViaCache: 'none',
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!controllerSeen) {
+        controllerSeen = true;
+        return;
+      }
+      if (reloadingForUpdate) return;
+      reloadingForUpdate = true;
+      window.location.reload();
+    });
+
+    window.addEventListener('focus', () => { void requestServiceWorkerUpdate(); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void requestServiceWorkerUpdate();
+    });
+
+    window.setInterval(() => { void requestServiceWorkerUpdate(); }, 30 * 60 * 1000);
+    void requestServiceWorkerUpdate();
   } catch (error) {
     console.warn('ONCHECK service worker registration failed', error);
   }
