@@ -268,7 +268,7 @@ function openSettings() {
 
   dialog.querySelector<HTMLFormElement>('#system-account-form')?.addEventListener('submit', event => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(event.currentTarget as HTMLFormElement);
     account.name = String(data.get('name') ?? '').trim() || 'James';
     account.role = String(data.get('role') ?? '').trim() || 'Personal OS';
     account.email = String(data.get('email') ?? '').trim();
@@ -279,7 +279,7 @@ function openSettings() {
 
   dialog.querySelector<HTMLFormElement>('#system-execution-form')?.addEventListener('submit', event => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(event.currentTarget as HTMLFormElement);
     account.maxDailyPriorities = Math.min(5, Math.max(1, Number(data.get('maxDailyPriorities') ?? 3)));
     account.lowEnergyMinutes = Math.min(180, Math.max(15, Number(data.get('lowEnergyMinutes') ?? 60)));
     account.weekStart = data.get('weekStart') === 'sunday' ? 'sunday' : 'monday';
@@ -292,7 +292,7 @@ function openSettings() {
 
   dialog.querySelector<HTMLFormElement>('#system-review-form')?.addEventListener('submit', event => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(event.currentTarget as HTMLFormElement);
     const saved: WeeklyReview = {
       weekKey: currentWeekKey(),
       wins: String(data.get('wins') ?? '').trim(),
