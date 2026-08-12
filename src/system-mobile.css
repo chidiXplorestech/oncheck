@@ -1,0 +1,7 @@
+@media(max-width:900px){
+  .sidebar nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+}
+
+@media(max-width:900px) and (max-height:600px) and (orientation:landscape){
+  .sidebar nav{grid-template-columns:1fr!important;grid-template-rows:repeat(5,minmax(0,1fr))!important}
+}
