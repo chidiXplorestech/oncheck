@@ -1,4 +1,4 @@
-const CACHE = 'oncheck-shell-v1';
+const CACHE = 'oncheck-shell-v2';
 const CORE = ['./', './manifest.webmanifest', './oncheck-icon.svg'];
 
 self.addEventListener('install', event => {
