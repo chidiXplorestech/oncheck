@@ -1,4 +1,5 @@
 import './mobile.css';
+import './mobile-rem-square.css';
 import './workout-mobile.css';
 import './system-mobile.css';
 
