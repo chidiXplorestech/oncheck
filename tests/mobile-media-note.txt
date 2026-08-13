@@ -1,1 +1,0 @@
-Mobile media regression coverage lives in tests/media-mobile.spec.ts.
