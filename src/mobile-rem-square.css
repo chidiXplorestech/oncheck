@@ -258,3 +258,50 @@
 
   .goal-main h3 { font-size: 0.875rem; }
 }
+
+/* Preserve ONCHECK's compact landscape side dock while keeping covers square. */
+@media (max-width: 900px) and (max-height: 600px) and (orientation: landscape) {
+  .shell {
+    padding: 0 0 0 4.875rem;
+  }
+
+  .workspace { padding-bottom: 0; }
+
+  .sidebar {
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    right: auto;
+    width: 3.875rem;
+    height: auto;
+    padding: 0.375rem;
+  }
+
+  .sidebar nav {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .nav-btn {
+    width: 100%;
+    height: auto;
+    min-height: 3rem;
+    font-size: 0.4375rem;
+  }
+
+  .goal-row {
+    grid-template-columns: 1.875rem minmax(0, 1fr) 6.25rem 2.25rem;
+    grid-template-areas:
+      "check main cover menu"
+      ". progress cover menu";
+    padding: 0.5625rem;
+  }
+
+  .goal-row > .cover {
+    inline-size: 6.25rem;
+    max-inline-size: 6.25rem;
+    block-size: 6.25rem;
+    aspect-ratio: 1 / 1;
+  }
+}
