@@ -3,6 +3,7 @@ import './calendar-tracker';
 import './media-mobile-runtime';
 import './media-layer';
 import './workout-layer';
+import './workout-visuals';
 import './pwa';
 
 document.documentElement.dataset.oncheckLayers = 'ready';

@@ -1,0 +1,143 @@
+.training-visual-banner{
+  position:relative;
+  min-height:clamp(180px,22vw,260px);
+  margin:18px 28px 2px;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid #203341;
+  border-radius:14px;
+  background:#08131d;
+  box-shadow:0 20px 55px rgba(0,0,0,.22);
+}
+.training-visual-banner img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:saturate(.76) contrast(1.04) brightness(.72);
+  transform:scale(1.01);
+}
+.training-visual-monday img{object-position:center 36%}
+.training-visual-wednesday img{object-position:center 31%}
+.training-visual-thursday img{object-position:center 34%}
+.training-visual-shade{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background:
+    linear-gradient(90deg,rgba(5,13,20,.94) 0%,rgba(6,15,23,.79) 28%,rgba(7,17,26,.30) 58%,rgba(6,14,21,.78) 100%),
+    linear-gradient(180deg,rgba(4,10,15,.08),rgba(4,10,15,.52));
+  pointer-events:none;
+}
+.training-visual-banner::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(115,168,255,.07),transparent 26%,transparent 72%,rgba(0,0,0,.24));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.015);
+}
+.training-visual-copy{
+  position:absolute;
+  z-index:3;
+  left:24px;
+  bottom:22px;
+  display:grid;
+  gap:5px;
+  max-width:min(48%,520px);
+  margin:0;
+}
+.training-visual-copy span{
+  color:#73a8ff;
+  font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.16em;
+}
+.training-visual-copy strong{
+  color:#f3f6f8;
+  font-size:clamp(28px,4vw,52px);
+  line-height:.92;
+  letter-spacing:-.045em;
+  text-transform:uppercase;
+  text-shadow:0 3px 18px rgba(0,0,0,.5);
+}
+.training-visual-copy small{
+  margin-top:4px;
+  color:#aab8c4;
+  font-size:11px;
+  line-height:1.45;
+}
+.training-visual-athlete{
+  position:absolute;
+  z-index:3;
+  right:22px;
+  bottom:14px;
+  max-width:48%;
+  color:#c7d8e8;
+  opacity:.11;
+  font:900 clamp(28px,5.8vw,82px)/.82 Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;
+  letter-spacing:.035em;
+  text-align:right;
+  text-transform:uppercase;
+  pointer-events:none;
+}
+
+@media(max-width:900px){
+  .training-visual-banner{
+    min-height:clamp(160px,48vw,220px);
+    margin:14px 18px 0;
+    border-radius:12px;
+  }
+  .training-visual-banner img{filter:saturate(.74) contrast(1.04) brightness(.68)}
+  .training-visual-shade{
+    background:
+      linear-gradient(90deg,rgba(5,13,20,.94) 0%,rgba(6,15,23,.70) 42%,rgba(7,17,26,.28) 72%,rgba(6,14,21,.48) 100%),
+      linear-gradient(180deg,rgba(4,10,15,.06),rgba(4,10,15,.50));
+  }
+  .training-visual-copy{
+    left:16px;
+    bottom:15px;
+    max-width:68%;
+    gap:4px;
+  }
+  .training-visual-copy span{font-size:8px}
+  .training-visual-copy strong{font-size:clamp(24px,8vw,36px)}
+  .training-visual-copy small{
+    max-width:240px;
+    font-size:9px;
+    line-height:1.4;
+  }
+  .training-visual-athlete{
+    right:12px;
+    bottom:10px;
+    max-width:58%;
+    font-size:clamp(24px,9vw,48px);
+    opacity:.08;
+  }
+}
+
+@media(max-width:480px){
+  .training-visual-banner{
+    min-height:168px;
+    margin:12px 0 0;
+    border-radius:10px;
+  }
+  .training-visual-monday img{object-position:54% 38%}
+  .training-visual-wednesday img{object-position:50% 29%}
+  .training-visual-thursday img{object-position:50% 31%}
+  .training-visual-copy{
+    left:13px;
+    right:13px;
+    bottom:13px;
+    max-width:76%;
+  }
+  .training-visual-copy strong{font-size:27px}
+  .training-visual-copy small{font-size:8px}
+  .training-visual-athlete{
+    right:10px;
+    bottom:8px;
+    max-width:48%;
+    font-size:30px;
+  }
+}
