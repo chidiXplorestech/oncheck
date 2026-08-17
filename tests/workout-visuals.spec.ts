@@ -8,7 +8,7 @@ test('Training artwork follows the existing Monday Wednesday Thursday structure'
   const banner = page.locator('.training-visual-banner');
   await expect(banner).toBeVisible();
   await expect(banner).toHaveAttribute('data-day', 'monday');
-  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/monday-trunk\.webp$/);
+  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/monday-trunk-v2\.webp$/);
   await expect(page.locator('.exercise-row')).toHaveCount(15);
 
   const bannerBox = await banner.boundingBox();
@@ -18,12 +18,12 @@ test('Training artwork follows the existing Monday Wednesday Thursday structure'
 
   await page.locator('[data-workout-day="wednesday"]').click();
   await expect(banner).toHaveAttribute('data-day', 'wednesday');
-  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/wednesday-lower-body\.webp$/);
+  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/wednesday-lower-body-v2\.webp$/);
   await expect(page.locator('.exercise-row')).toHaveCount(8);
 
   await page.locator('[data-workout-day="thursday"]').click();
   await expect(banner).toHaveAttribute('data-day', 'thursday');
-  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/thursday-arms\.webp$/);
+  await expect(banner.locator('img')).toHaveAttribute('src', /workouts\/thursday-arms-v2\.webp$/);
   await expect(page.locator('.exercise-row')).toHaveCount(5);
 
   const dimensions = await page.evaluate(() => ({
