@@ -19,7 +19,7 @@ const artwork: Record<DayId, WorkoutArtwork> = {
     area: 'TRUNK',
     focus: 'Neck · Chest · Core · Back · Shoulders',
     athlete: 'ARNOLD SCHWARZENEGGER',
-    src: `${base}workouts/monday-trunk.png`,
+    src: `${base}workouts/monday-trunk.webp`,
     alt: 'Monday trunk training artwork featuring Arnold Schwarzenegger in a dark gym.',
   },
   wednesday: {
@@ -27,7 +27,7 @@ const artwork: Record<DayId, WorkoutArtwork> = {
     area: 'LOWER BODY',
     focus: 'Hamstrings · Squats · Lunges · Calves · Thighs',
     athlete: 'RONNIE COLEMAN',
-    src: `${base}workouts/wednesday-lower-body.png`,
+    src: `${base}workouts/wednesday-lower-body.webp`,
     alt: 'Wednesday lower-body training artwork featuring Ronnie Coleman in a dark gym.',
   },
   thursday: {
@@ -35,7 +35,7 @@ const artwork: Record<DayId, WorkoutArtwork> = {
     area: 'SIDES / ARMS',
     focus: 'Biceps · Triceps · Forearms · Power',
     athlete: 'ARNOLD SCHWARZENEGGER',
-    src: `${base}workouts/thursday-arms.png`,
+    src: `${base}workouts/thursday-arms.webp`,
     alt: 'Thursday arms training artwork featuring Arnold Schwarzenegger in a dark gym.',
   },
 };
