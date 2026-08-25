@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('ONCHECK remains usable when Supabase environment variables are not configured', async ({ page }) => {
+test('ONTRACK presents the account gate when no session exists', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.auth-root')).toHaveCount(0);
-  await expect(page.locator('.shell')).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('data-supabase', 'unconfigured');
+  await expect(page.locator('.auth-root')).toBeVisible();
+  await expect(page.locator('.auth-brand')).toHaveText('ONTRACK');
+  await expect(page.getByRole('button', { name: 'LOG IN' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
+  await expect(page).toHaveTitle('ONTRACK');
 });
