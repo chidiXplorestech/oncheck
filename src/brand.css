@@ -1,0 +1,48 @@
+:root{
+  --ontrack-ink:#0e1116;
+  --ontrack-charcoal:#2a3038;
+  --ontrack-silver:#6b7280;
+  --ontrack-white:#f3f4f6;
+  --ontrack-lime:#a6ff00;
+}
+html[data-brand="ontrack"] .brand,
+html[data-brand="ontrack"] .auth-brand{
+  color:var(--ontrack-white)!important;
+  letter-spacing:.18em;
+}
+html[data-brand="ontrack"] .brand::before,
+html[data-brand="ontrack"] .auth-brand::before{
+  content:"";
+  display:inline-block;
+  width:.58rem;
+  height:.58rem;
+  margin-right:.5rem;
+  border:2px solid var(--ontrack-white);
+  border-right-color:transparent;
+  border-radius:50%;
+  vertical-align:-.05rem;
+  box-shadow:inset .18rem -.18rem 0 -.12rem var(--ontrack-lime);
+}
+html[data-brand="ontrack"] .primary,
+html[data-brand="ontrack"] .auth-primary{
+  border-color:rgba(166,255,0,.5)!important;
+}
+html[data-brand="ontrack"] .auth-primary{
+  background:var(--ontrack-lime)!important;
+  color:#0b0e11!important;
+}
+html[data-brand="ontrack"] .nav-btn.active,
+html[data-brand="ontrack"] .tab.active{
+  box-shadow:inset 0 -1px 0 var(--ontrack-lime);
+}
+html[data-brand="ontrack"] .long-bar i,
+html[data-brand="ontrack"] .session-progress i,
+html[data-brand="ontrack"] .goal-progress i{
+  background:var(--ontrack-lime)!important;
+}
+html[data-brand="ontrack"] .auth-root{
+  background:var(--ontrack-ink)!important;
+}
+html[data-brand="ontrack"] .auth-stage{
+  background:radial-gradient(circle at 70% 15%,rgba(166,255,0,.08),transparent 30%),linear-gradient(180deg,#15191e,#0b0e12 68%)!important;
+}
