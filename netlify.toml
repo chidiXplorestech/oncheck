@@ -5,7 +5,7 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# ONCHECK is a client-side app. Any direct route should fall back to index.html.
+# ONTRACK is a client-side app. Any direct route should fall back to index.html.
 [[redirects]]
   from = "/*"
   to = "/index.html"
