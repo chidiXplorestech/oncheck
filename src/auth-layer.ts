@@ -5,6 +5,7 @@ import { supabase, supabaseEnabled } from './supabase';
 type AuthMode = 'login' | 'signup' | 'forgot' | 'recovery' | 'check-email';
 
 const E2E_BYPASS = import.meta.env.VITE_E2E_BYPASS_AUTH === '1';
+const PRODUCTION_APP_URL = 'https://ontrack-everyday.netlify.app/';
 let mode: AuthMode = 'login';
 let authRoot: HTMLElement | null = null;
 let currentSession: Session | null = null;
@@ -13,6 +14,11 @@ let busy = false;
 
 function esc(value: string) {
   return value.replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch] ?? ch));
+}
+
+function authRedirectUrl() {
+  if (import.meta.env.PROD) return PRODUCTION_APP_URL;
+  return `${window.location.origin}${import.meta.env.BASE_URL}`;
 }
 
 function setAppLocked(locked: boolean) {
@@ -149,11 +155,10 @@ async function handleSignup(form: HTMLFormElement) {
   const confirmPassword = String(data.get('confirmPassword') ?? '');
   if (password !== confirmPassword) throw new Error('Passwords do not match.');
 
-  const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
   const { data: result, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: redirectTo, data: { display_name: name } },
+    options: { emailRedirectTo: authRedirectUrl(), data: { display_name: name } },
   });
   if (error) throw error;
   if (!result.session) {
@@ -165,8 +170,7 @@ async function handleSignup(form: HTMLFormElement) {
 async function handleForgot(form: HTMLFormElement) {
   const data = new FormData(form);
   const email = String(data.get('email') ?? '').trim();
-  const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() });
   if (error) throw error;
   mode = 'check-email';
   message = `Recovery instructions sent to ${email}.`;
