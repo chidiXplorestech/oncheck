@@ -18,10 +18,26 @@ function setAppLocked(locked: boolean) {
   document.documentElement.dataset.authRequired = locked ? 'true' : 'false';
 }
 
+function patchAccount() {
+  if (!currentSession) return;
+  const profile = document.querySelector<HTMLElement>('.profile');
+  if (!profile || profile.dataset.authPatched === currentSession.user.id) return;
+  const displayName = String(currentSession.user.user_metadata?.display_name ?? '').trim() || 'ONCHECK';
+  const email = currentSession.user.email ?? '';
+  profile.dataset.authPatched = currentSession.user.id;
+  profile.innerHTML = `
+    <div class="avatar"></div>
+    <div class="oncheck-auth-account">
+      <div class="oncheck-auth-account-copy"><strong>${esc(displayName)}</strong><span>${esc(email)}</span></div>
+      <button type="button" class="oncheck-auth-logout" data-auth-logout>LOG OUT</button>
+    </div>`;
+}
+
 function removeGate() {
   authRoot?.remove();
   authRoot = null;
   setAppLocked(false);
+  requestAnimationFrame(patchAccount);
 }
 
 function shell(content: string) {
@@ -222,6 +238,11 @@ document.addEventListener('submit', event => {
   event.preventDefault();
   void submit(form);
 });
+
+const accountObserver = new MutationObserver(() => {
+  if (currentSession) requestAnimationFrame(patchAccount);
+});
+accountObserver.observe(document.documentElement, { childList: true, subtree: true });
 
 if (supabase) {
   setAppLocked(true);
