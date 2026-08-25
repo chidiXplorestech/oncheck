@@ -1,3 +1,4 @@
+import './auth-layer';
 import './system-layer';
 import './calendar-tracker';
 import './media-mobile-runtime';
