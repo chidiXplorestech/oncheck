@@ -1,4 +1,4 @@
-name: ONCHECK CI
+name: ONTRACK CI
 
 on:
   push:
@@ -24,7 +24,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Production build
+      - name: Production build for UI regression tests
+        env:
+          VITE_E2E_BYPASS_AUTH: '1'
         run: npm run build
 
       - name: Install Chromium for UI regression tests
@@ -42,7 +44,7 @@ jobs:
       - name: Upload offline phone build
         uses: actions/upload-artifact@v4
         with:
-          name: oncheck-offline
+          name: ontrack-offline
           path: dist/oncheck-offline.html
           if-no-files-found: error
           retention-days: 30
