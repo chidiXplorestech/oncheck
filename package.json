@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  },
   "devDependencies": {
     "@playwright/test": "latest",
     "typescript": "^5.9.2",
