@@ -1,18 +1,34 @@
-# ONCHECK
+# ONTRACK
 
-ONCHECK is a visual personal operating system for goals, daily execution, weekly planning, training, progress tracking and media references.
+ONTRACK is a visual personal operating system for goals, daily execution, weekly planning, training, progress tracking and media references.
+
+Production app: https://ontrack-everyday.netlify.app/
 
 ## Stack
 
 - TypeScript (strict mode)
 - Vite
-- localStorage for core goal/planning/account state
-- IndexedDB for uploaded media
+- Supabase Auth for sign-up, login, email verification and password recovery
+- Supabase Postgres with Row Level Security for user-owned cloud data
+- Supabase Storage for private user media
+- localStorage / IndexedDB retained as local cache and migration support
 - Progressive Web App shell for mobile installation/offline reopening
+- Netlify deployment
 - Mobile-first responsive layer down to 320px
 - Zero UI framework dependency
 
-## Functional MVP
+## Current cloud foundation
+
+- Secure email/password accounts through Supabase Auth
+- Automatic profile creation tied to the Supabase Auth user ID
+- RLS-protected profiles, goals, tasks, calendar entries, workout sessions, activity logs, media metadata and user settings
+- Private `user-media` Storage bucket with per-user access policies
+- Cross-device cloud sync for goals, checklists and calendar blocks
+- Existing local goal/calendar data can be migrated into the first signed-in account
+- Account Settings hydrate from the signed-in Supabase profile rather than a separate local identity
+- Passwords are never stored in ONTRACK application tables
+
+## Functional product
 
 - Preloaded long-term goal system
 - Add, edit, duplicate and delete goals
@@ -22,14 +38,11 @@ ONCHECK is a visual personal operating system for goals, daily execution, weekly
 - Goal search and status filtering
 - Daily Focus system with capped priorities
 - Low-Energy Mode with a configurable minimum-day target
-- Execution Pulse for goals, weekly blocks and today's priorities
 - Account / Settings area
-- Editable profile name, role and optional email
 - Configurable daily priority limit and low-energy minutes
 - Weekly review with wins, friction, next-week changes and score
 - JSON backup export/import
-- Unlimited app-level media count; browser/device quota is the practical limit
-- Multi-image/video uploads stored in IndexedDB
+- Multi-image/video uploads
 - Change/remove goal covers from the media library
 - Weekly planning calendar with current dates
 - Add, edit, complete and delete planning blocks
@@ -38,7 +51,6 @@ ONCHECK is a visual personal operating system for goals, daily execution, weekly
 - Responsive desktop/tablet/mobile layout
 - Installable PWA
 - Single-file offline build option
-- Persistent local data between refreshes
 
 ## Run from VS Code
 
@@ -58,17 +70,36 @@ Vite will print the local URL, normally:
 http://localhost:5173
 ```
 
-## Test on your phone over the same Wi-Fi
+## Supabase
 
-```bash
-npm run dev:mobile
+Project ref:
+
+```text
+ayizmdoyynptwadnjpdc
 ```
 
-Vite will print a `Network` URL such as `http://192.168.x.x:5173`. Open that URL on your phone while the phone and computer are on the same network.
+The frontend uses the public Supabase URL and publishable key only. Never expose a Supabase service-role key in Vite or browser code.
+
+For production authentication, Supabase Authentication → URL Configuration should use:
+
+```text
+Site URL: https://ontrack-everyday.netlify.app/
+Redirect URL: https://ontrack-everyday.netlify.app/**
+```
+
+Local development can additionally allow:
+
+```text
+http://localhost:5173/**
+```
 
 ## Netlify
 
-The repository includes `netlify.toml` and is ready for a standard Vite deployment.
+Production deployment:
+
+```text
+https://ontrack-everyday.netlify.app/
+```
 
 Build command:
 
@@ -82,7 +113,15 @@ Publish directory:
 dist
 ```
 
-The PWA manifest and service worker are included in the production build.
+The repository includes `netlify.toml`, the PWA manifest and service worker.
+
+## Test on your phone over the same Wi-Fi
+
+```bash
+npm run dev:mobile
+```
+
+Vite will print a `Network` URL such as `http://192.168.x.x:5173`. Open that URL on your phone while the phone and computer are on the same network.
 
 ## Single-file local/offline build
 
@@ -98,9 +137,7 @@ Output:
 dist/oncheck-offline.html
 ```
 
-GitHub Actions also uploads this file as the `oncheck-offline` build artifact after successful pushes to `main`.
-
-Important: opening local HTML files directly behaves differently across mobile operating systems and browsers. The single-file build removes ONCHECK's normal external JS/CSS asset dependency, but durable browser storage and install/PWA APIs can still depend on the browser environment. For everyday phone use, a hosted PWA remains the most predictable route.
+GitHub Actions uploads the offline phone build after successful CI runs. For normal use, the hosted PWA is the primary ONTRACK experience because authentication and cross-device cloud sync require the Supabase-backed deployment.
 
 ## Verify before development
 
@@ -117,36 +154,6 @@ npm run build
 npm run preview
 ```
 
-## Project structure
+## Data model
 
-```text
-index.html
-netlify.toml
-public/
-  manifest.webmanifest
-  oncheck-icon.svg
-  sw.js
-scripts/
-  build-offline.mjs
-src/
-  main.ts
-  styles.css
-  app-v2.css
-  responsive-v2.css
-  media-layer.ts
-  media-layer.css
-  workout-layer.ts
-  workout.css
-  mobile.css
-  workout-mobile.css
-  pwa.ts
-package.json
-tsconfig.json
-vite.config.ts
-```
-
-## Data and sync
-
-ONCHECK is currently local-first. Goal/planning/account/training state is stored in browser storage and uploaded media is stored in IndexedDB.
-
-This means phone and laptop installations currently maintain independent local state. Cross-device sync would require a shared backend/auth layer later; it is intentionally not required for the current local-first MVP.
+Supabase is the cloud source of truth for account-owned data. Local browser storage remains useful for offline/cache behavior and migration from the original local-only build. Goals, checklists and calendar entries currently sync to the authenticated account; workout and media cloud synchronization continue to use the backend infrastructure prepared for their dedicated sync layer.
