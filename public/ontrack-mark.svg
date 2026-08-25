@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ONTRACK target arrow mark</title>
+  <desc id="desc">A neon lime broken target ring with a forward track arrow.</desc>
+  <g fill="none" stroke="#B7FF32" stroke-linejoin="miter">
+    <circle cx="256" cy="256" r="166" stroke-width="58" stroke-linecap="butt" stroke-dasharray="870 174" transform="rotate(-132 256 256)"/>
+    <path d="M139 229h132l61-61 42 42-46 46 46 46-42 42-61-61H139l55-54z" fill="#B7FF32" stroke="none"/>
+  </g>
+  <path d="M210 229h61l61-61 42 42-46 46 46 46-42 42-61-61h-61l55-54z" fill="#111419"/>
+  <path d="M139 283h109l-54 54z" fill="#D2FF73"/>
+</svg>
