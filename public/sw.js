@@ -1,5 +1,5 @@
-const CACHE = 'oncheck-shell-v4';
-const CORE = ['./', './manifest.webmanifest', './oncheck-icon.svg'];
+const CACHE = 'ontrack-shell-v1';
+const CORE = ['./', './manifest.webmanifest', './ontrack-icon.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
