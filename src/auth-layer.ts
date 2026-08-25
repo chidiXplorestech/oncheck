@@ -4,6 +4,7 @@ import { supabase, supabaseEnabled } from './supabase';
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'recovery' | 'check-email';
 
+const E2E_BYPASS = import.meta.env.VITE_E2E_BYPASS_AUTH === '1';
 let mode: AuthMode = 'login';
 let authRoot: HTMLElement | null = null;
 let currentSession: Session | null = null;
@@ -22,7 +23,7 @@ function patchAccount() {
   if (!currentSession) return;
   const profile = document.querySelector<HTMLElement>('.profile');
   if (!profile || profile.dataset.authPatched === currentSession.user.id) return;
-  const displayName = String(currentSession.user.user_metadata?.display_name ?? '').trim() || 'ONCHECK';
+  const displayName = String(currentSession.user.user_metadata?.display_name ?? '').trim() || 'ONTRACK';
   const email = currentSession.user.email ?? '';
   profile.dataset.authPatched = currentSession.user.id;
   profile.innerHTML = `
@@ -45,14 +46,14 @@ function shell(content: string) {
     <div class="auth-stage">
       <div class="auth-atmosphere" aria-hidden="true"></div>
       <main class="auth-card" aria-live="polite">
-        <div class="auth-brand">ONCHECK</div>
+        <div class="auth-brand">ONTRACK</div>
         ${content}
       </main>
     </div>`;
 }
 
 function render() {
-  if (!supabaseEnabled || currentSession) {
+  if (E2E_BYPASS || !supabaseEnabled || currentSession) {
     removeGate();
     return;
   }
@@ -64,13 +65,12 @@ function render() {
   }
 
   setAppLocked(true);
-
   const feedback = message ? `<p class="auth-feedback">${esc(message)}</p>` : '';
   const disabled = busy ? 'disabled' : '';
 
   if (mode === 'signup') {
     authRoot.innerHTML = shell(`
-      <div class="auth-heading"><span>CREATE ACCOUNT</span><h1>Start with one account.</h1><p>Your ONCHECK data will belong to this account and follow you across devices.</p></div>
+      <div class="auth-heading"><span>CREATE ACCOUNT</span><h1>Start with one account.</h1><p>Your ONTRACK data will belong to this account and follow you across devices.</p></div>
       <form class="auth-form" data-auth-form="signup">
         <label>Name<input name="name" autocomplete="name" required /></label>
         <label>Email<input name="email" type="email" autocomplete="email" required /></label>
@@ -99,7 +99,7 @@ function render() {
 
   if (mode === 'recovery') {
     authRoot.innerHTML = shell(`
-      <div class="auth-heading"><span>NEW PASSWORD</span><h1>Secure the account.</h1><p>Create a new password for your ONCHECK account.</p></div>
+      <div class="auth-heading"><span>NEW PASSWORD</span><h1>Secure the account.</h1><p>Create a new password for your ONTRACK account.</p></div>
       <form class="auth-form" data-auth-form="recovery">
         <label>New password<input name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
         <label>Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
@@ -112,14 +112,14 @@ function render() {
 
   if (mode === 'check-email') {
     authRoot.innerHTML = shell(`
-      <div class="auth-heading auth-centered"><span>VERIFY EMAIL</span><h1>Check your inbox.</h1><p>${feedback || 'We sent a secure verification email. Open it to activate your ONCHECK account.'}</p></div>
+      <div class="auth-heading auth-centered"><span>VERIFY EMAIL</span><h1>Check your inbox.</h1><p>${feedback || 'We sent a secure verification email. Open it to activate your ONTRACK account.'}</p></div>
       <button class="auth-primary" data-auth-mode="login">BACK TO LOGIN</button>
     `);
     return;
   }
 
   authRoot.innerHTML = shell(`
-    <div class="auth-heading"><span>PERSONAL OS</span><h1>Your life. In execution.</h1><p>Sign in to continue to your ONCHECK workspace.</p></div>
+    <div class="auth-heading"><span>PERSONAL OS</span><h1>Your life. In execution.</h1><p>Sign in to continue to your ONTRACK workspace.</p></div>
     <form class="auth-form" data-auth-form="login">
       <label>Email<input name="email" type="email" autocomplete="email" required /></label>
       <label>Password<input name="password" type="password" autocomplete="current-password" required /></label>
@@ -134,7 +134,6 @@ function render() {
 }
 
 async function handleLogin(form: HTMLFormElement) {
-  if (!supabase) return;
   const data = new FormData(form);
   const email = String(data.get('email') ?? '').trim();
   const password = String(data.get('password') ?? '');
@@ -143,7 +142,6 @@ async function handleLogin(form: HTMLFormElement) {
 }
 
 async function handleSignup(form: HTMLFormElement) {
-  if (!supabase) return;
   const data = new FormData(form);
   const name = String(data.get('name') ?? '').trim();
   const email = String(data.get('email') ?? '').trim();
@@ -155,13 +153,9 @@ async function handleSignup(form: HTMLFormElement) {
   const { data: result, error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      emailRedirectTo: redirectTo,
-      data: { display_name: name },
-    },
+    options: { emailRedirectTo: redirectTo, data: { display_name: name } },
   });
   if (error) throw error;
-
   if (!result.session) {
     mode = 'check-email';
     message = `Verification sent to ${email}.`;
@@ -169,7 +163,6 @@ async function handleSignup(form: HTMLFormElement) {
 }
 
 async function handleForgot(form: HTMLFormElement) {
-  if (!supabase) return;
   const data = new FormData(form);
   const email = String(data.get('email') ?? '').trim();
   const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
@@ -180,7 +173,6 @@ async function handleForgot(form: HTMLFormElement) {
 }
 
 async function handleRecovery(form: HTMLFormElement) {
-  if (!supabase) return;
   const data = new FormData(form);
   const password = String(data.get('password') ?? '');
   const confirmPassword = String(data.get('confirmPassword') ?? '');
@@ -210,8 +202,8 @@ async function submit(form: HTMLFormElement) {
   }
 }
 
-function handleAuthEvent(event: AuthChangeEvent, session: Session | null) {
-  currentSession = session;
+function handleAuthEvent(event: AuthChangeEvent, nextSession: Session | null) {
+  currentSession = nextSession;
   if (event === 'PASSWORD_RECOVERY') {
     mode = 'recovery';
     currentSession = null;
@@ -227,9 +219,8 @@ document.addEventListener('click', event => {
     render();
     return;
   }
-
   const logout = (event.target as HTMLElement).closest<HTMLElement>('[data-auth-logout]');
-  if (logout && supabase) void supabase.auth.signOut();
+  if (logout) void supabase.auth.signOut();
 });
 
 document.addEventListener('submit', event => {
@@ -244,19 +235,18 @@ const accountObserver = new MutationObserver(() => {
 });
 accountObserver.observe(document.documentElement, { childList: true, subtree: true });
 
-if (supabase) {
+if (E2E_BYPASS) {
+  removeGate();
+  document.documentElement.dataset.authBypass = 'e2e';
+} else {
   setAppLocked(true);
   void supabase.auth.getSession().then(({ data }) => {
     currentSession = data.session;
     render();
   });
   supabase.auth.onAuthStateChange(handleAuthEvent);
-} else {
-  setAppLocked(false);
-  document.documentElement.dataset.supabase = 'unconfigured';
 }
 
-export async function signOutOncheck() {
-  if (!supabase) return;
+export async function signOutOntrack() {
   await supabase.auth.signOut();
 }
