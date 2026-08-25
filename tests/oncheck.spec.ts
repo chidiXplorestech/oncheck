@@ -5,7 +5,7 @@ const onePixelPng = Buffer.from(
   'base64',
 );
 
-test('desktop keeps the original ONCHECK composition', async ({ page }) => {
+test('desktop keeps the original ONTRACK composition', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
@@ -57,12 +57,12 @@ test('Account Settings saves and updates the existing profile and greeting', asy
   await expect(page.locator('.system-dialog')).toBeVisible();
 
   await page.getByLabel('Display name').fill('Chidi');
-  await page.getByLabel('Role / label').fill('ONCHECK');
+  await page.getByLabel('Role / label').fill('ONTRACK');
   await page.getByRole('button', { name: 'Save Account' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
 
   await expect(page.locator('.profile strong')).toHaveText('Chidi');
-  await expect(page.locator('.profile span')).toHaveText('ONCHECK');
+  await expect(page.locator('.profile span')).toHaveText('ONTRACK');
   await expect(page.locator('.hero-copy h1')).toContainText('Chidi');
 
   await page.reload();
