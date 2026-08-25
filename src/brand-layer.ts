@@ -2,6 +2,13 @@ import './brand.css';
 
 const BRAND_FROM = 'ONCHECK';
 const BRAND_TO = 'ONTRACK';
+const MARK = `${import.meta.env.BASE_URL}ontrack-mark.svg`;
+
+function lockup(node: HTMLElement) {
+  if (node.dataset.ontrackLockup === '1') return;
+  node.dataset.ontrackLockup = '1';
+  node.innerHTML = `<img class="ontrack-brand-mark" src="${MARK}" alt="" aria-hidden="true"><span>ONTRACK</span>`;
+}
 
 function replaceBrandText(root: ParentNode = document) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -13,6 +20,7 @@ function replaceBrandText(root: ParentNode = document) {
     node = walker.nextNode();
   }
 
+  document.querySelectorAll<HTMLElement>('.brand,.auth-brand').forEach(lockup);
   document.title = BRAND_TO;
   document.querySelector('meta[name="description"]')?.setAttribute(
     'content',
