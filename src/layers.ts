@@ -1,3 +1,4 @@
+import './brand-layer';
 import './auth-layer';
 import './system-layer';
 import './calendar-tracker';
