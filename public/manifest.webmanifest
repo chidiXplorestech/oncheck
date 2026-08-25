@@ -1,17 +1,17 @@
 {
-  "name": "ONCHECK",
-  "short_name": "ONCHECK",
-  "description": "A private-feeling personal operating system for goals, training, focus and planning.",
+  "name": "ONTRACK",
+  "short_name": "ONTRACK",
+  "description": "A private-feeling personal operating system for focus, execution, progress, training and planning.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#07111a",
-  "theme_color": "#07111a",
+  "background_color": "#0e1116",
+  "theme_color": "#0e1116",
   "categories": ["productivity", "lifestyle"],
   "icons": [
     {
-      "src": "./oncheck-icon.svg",
+      "src": "./ontrack-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
