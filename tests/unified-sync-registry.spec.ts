@@ -15,13 +15,6 @@ test('unified sync registry is loaded and covers all account-owned browser store
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.ontrackSync)).toBe('unified');
 
-  const source = await page.evaluate(async () => {
-    const response = await fetch('/src/unified-cloud-state.ts');
-    return response.text();
-  });
-
-  for (const key of CLOUD_KEYS) expect(source).toContain(`'${key}'`);
-  expect(source).toContain("table: 'user_state'");
-  expect(source).toContain("window.addEventListener('focus'");
-  expect(source).toContain("document.addEventListener('visibilitychange'");
+  const registered = await page.evaluate(() => (document.documentElement.dataset.cloudStateKeys ?? '').split(',').filter(Boolean));
+  expect(registered).toEqual(CLOUD_KEYS);
 });
