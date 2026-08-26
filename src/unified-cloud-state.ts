@@ -28,6 +28,8 @@ type CloudRow = {
 
 type Snapshot = Map<CloudStateKey, string | null>;
 
+document.documentElement.dataset.cloudStateKeys = CLOUD_STATE_KEYS.join(',');
+
 let session: Session | null = null;
 let channel: RealtimeChannel | null = null;
 let snapshot: Snapshot = new Map();
