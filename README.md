@@ -10,23 +10,37 @@ Production app: https://ontrack-everyday.netlify.app/
 - Vite
 - Supabase Auth for sign-up, login, email verification and password recovery
 - Supabase Postgres with Row Level Security for user-owned cloud data
+- Supabase Realtime for cross-device propagation
 - Supabase Storage for private user media
-- localStorage / IndexedDB retained as local cache and migration support
+- localStorage / IndexedDB retained as offline cache and migration support
 - Progressive Web App shell for mobile installation/offline reopening
 - Netlify deployment
 - Mobile-first responsive layer down to 320px
 - Zero UI framework dependency
 
-## Current cloud foundation
+## ONTRACK Sync V2
+
+ONTRACK now follows a one-account, one-cloud-state model:
+
+- Supabase is the authoritative state for goals, tasks and calendar blocks.
+- Signed-in devices pull cloud state at login, when the app regains focus/visibility, and when the network reconnects.
+- Local edits are pushed back to Supabase automatically.
+- Supabase Realtime subscriptions propagate changes made on another device.
+- Account execution settings, Daily Focus, Weekly Review, workout progress/custom exercises and cover assignments sync through the account's RLS-protected settings record.
+- Media files are uploaded to the private `user-media` Storage bucket and downloaded into the local IndexedDB cache on other devices.
+- Media deletions propagate across devices.
+- localStorage and IndexedDB remain local caches so the UI can continue to behave quickly and preserve the migration path from the original local-only app.
+
+No cron job is required for normal ONTRACK synchronization.
+
+## Cloud security
 
 - Secure email/password accounts through Supabase Auth
 - Automatic profile creation tied to the Supabase Auth user ID
 - RLS-protected profiles, goals, tasks, calendar entries, workout sessions, activity logs, media metadata and user settings
-- Private `user-media` Storage bucket with per-user access policies
-- Cross-device cloud sync for goals, checklists and calendar blocks
-- Existing local goal/calendar data can be migrated into the first signed-in account
-- Account Settings hydrate from the signed-in Supabase profile rather than a separate local identity
+- Private `user-media` Storage bucket with per-user folder policies
 - Passwords are never stored in ONTRACK application tables
+- The browser uses only the public project URL and publishable key; service-role credentials must never be exposed in Vite/browser code
 
 ## Functional product
 
@@ -77,8 +91,6 @@ Project ref:
 ```text
 ayizmdoyynptwadnjpdc
 ```
-
-The frontend uses the public Supabase URL and publishable key only. Never expose a Supabase service-role key in Vite or browser code.
 
 For production authentication, Supabase Authentication → URL Configuration should use:
 
@@ -153,7 +165,3 @@ npm run build:offline
 npm run build
 npm run preview
 ```
-
-## Data model
-
-Supabase is the cloud source of truth for account-owned data. Local browser storage remains useful for offline/cache behavior and migration from the original local-only build. Goals, checklists and calendar entries currently sync to the authenticated account; workout and media cloud synchronization continue to use the backend infrastructure prepared for their dedicated sync layer.
