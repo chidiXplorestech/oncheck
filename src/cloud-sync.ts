@@ -1,9 +1,9 @@
-import type { Session } from '@supabase/supabase-js';
+import type { RealtimeChannel, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
 const STATE_KEY = 'oncheck-state-v1';
 const OWNER_KEY = 'ontrack-cloud-owner-v1';
-const RELOAD_KEY = 'ontrack-cloud-reload-v1';
+const E2E_BYPASS = import.meta.env.VITE_E2E_BYPASS_AUTH === '1';
 
 type LocalTask = { id: string; title: string; done: boolean };
 type LocalGoal = {
@@ -54,9 +54,13 @@ type RemoteBlock = {
 };
 
 let session: Session | null = null;
+let channel: RealtimeChannel | null = null;
 let lastLocal = '';
-let syncing = false;
-let queued = false;
+let pushing = false;
+let pulling = false;
+let pushQueued = false;
+let pullTimer = 0;
+let initialisedUser = '';
 
 function readLocal(): LocalState | null {
   try {
@@ -115,7 +119,7 @@ function remoteToLocal(remote: Awaited<ReturnType<typeof fetchRemote>>, existing
       targetDate: goal.target_date ?? '',
       notes: goal.notes,
       tasks: tasksByGoal.get(clientId) ?? [],
-      ...(goal.cover_path?.startsWith('data:') || goal.cover_path?.startsWith('http') ? { cover: goal.cover_path } : {}),
+      ...(goal.cover_path?.startsWith('http') ? { cover: goal.cover_path } : {}),
     };
   });
 
@@ -167,14 +171,7 @@ async function pushLocal(userId: string, state: LocalState) {
   if (localTasks.length) {
     const rows = localTasks.flatMap(({ goal, task, position }) => {
       const goalId = goalUuidByClient.get(goal.id);
-      return goalId ? [{
-        user_id: userId,
-        goal_id: goalId,
-        client_id: task.id,
-        title: task.title,
-        done: task.done,
-        position,
-      }] : [];
+      return goalId ? [{ user_id: userId, goal_id: goalId, client_id: task.id, title: task.title, done: task.done, position }] : [];
     });
     const result = await supabase.from('tasks').upsert(rows, { onConflict: 'user_id,client_id' });
     if (result.error) throw result.error;
@@ -199,95 +196,142 @@ async function pushLocal(userId: string, state: LocalState) {
   }
 }
 
-async function logEvent(userId: string, eventType: string, metadata: Record<string, unknown> = {}) {
-  await supabase.from('activity_logs').insert({ user_id: userId, event_type: eventType, entity_type: 'app', metadata });
-}
-
-async function initialiseForSession(next: Session) {
-  session = next;
-  const userId = next.user.id;
-  const owner = localStorage.getItem(OWNER_KEY);
-  const local = readLocal();
-  const remote = await fetchRemote(userId);
-
-  if (!owner && remote.goals.length === 0 && local?.goals.length) {
-    await pushLocal(userId, local);
+async function pullCloud(reason = 'remote') {
+  if (!session || pulling || !navigator.onLine) return;
+  pulling = true;
+  try {
+    const userId = session.user.id;
+    const remote = await fetchRemote(userId);
+    const local = readLocal();
+    const next = remoteToLocal(remote, local);
+    const serialized = JSON.stringify(next);
+    const current = localSignature();
     localStorage.setItem(OWNER_KEY, userId);
-    lastLocal = localSignature();
-    await logEvent(userId, 'legacy_device_import', { goals: local.goals.length, blocks: local.blocks.length });
-    return;
-  }
-
-  if (owner && owner !== userId && remote.goals.length === 0) {
-    localStorage.removeItem(STATE_KEY);
-    localStorage.setItem(OWNER_KEY, userId);
-    localStorage.setItem(RELOAD_KEY, '1');
-    location.reload();
-    return;
-  }
-
-  if (remote.goals.length > 0 && owner !== userId) {
-    const nextState = remoteToLocal(remote, local);
-    localStorage.setItem(STATE_KEY, JSON.stringify(nextState));
-    localStorage.setItem(OWNER_KEY, userId);
-    localStorage.setItem(RELOAD_KEY, '1');
-    location.reload();
-    return;
-  }
-
-  localStorage.setItem(OWNER_KEY, userId);
-  lastLocal = localSignature();
-
-  if (localStorage.getItem(RELOAD_KEY)) {
-    localStorage.removeItem(RELOAD_KEY);
-    const fresh = readLocal();
-    if (fresh && remote.goals.length === 0) await pushLocal(userId, fresh);
+    lastLocal = serialized;
+    document.documentElement.dataset.cloudSync = 'synced';
+    document.documentElement.dataset.cloudSource = 'supabase';
+    if (serialized !== current) {
+      localStorage.setItem(STATE_KEY, serialized);
+      window.dispatchEvent(new CustomEvent('ontrack:cloud-state', { detail: { reason } }));
+      location.reload();
+    }
+  } catch (error) {
+    document.documentElement.dataset.cloudSync = 'error';
+    console.error('ONTRACK cloud pull failed', error);
+  } finally {
+    pulling = false;
   }
 }
 
-async function syncNow() {
-  if (!session || syncing || !navigator.onLine) return;
+async function pushIfDirty() {
+  if (!session || pushing || pulling || !navigator.onLine) return;
   const current = localSignature();
   if (!current || current === lastLocal) return;
   const state = readLocal();
   if (!state) return;
-  syncing = true;
+  pushing = true;
   try {
     await pushLocal(session.user.id, state);
     lastLocal = current;
     document.documentElement.dataset.cloudSync = 'synced';
+    document.documentElement.dataset.cloudSource = 'local';
   } catch (error) {
     document.documentElement.dataset.cloudSync = 'error';
-    console.error('ONTRACK cloud sync failed', error);
+    console.error('ONTRACK cloud push failed', error);
   } finally {
-    syncing = false;
+    pushing = false;
   }
 }
 
-function queueSync() {
-  if (queued) return;
-  queued = true;
-  setTimeout(() => {
-    queued = false;
-    void syncNow();
-  }, 450);
+function queuePush() {
+  if (pushQueued) return;
+  pushQueued = true;
+  window.setTimeout(() => {
+    pushQueued = false;
+    void pushIfDirty();
+  }, 350);
 }
 
-supabase.auth.onAuthStateChange((_event, nextSession) => {
-  session = nextSession;
-  if (!nextSession) return;
-  void initialiseForSession(nextSession).catch(error => {
-    document.documentElement.dataset.cloudSync = 'error';
-    console.error('ONTRACK cloud initialisation failed', error);
+function queuePull(reason = 'realtime') {
+  window.clearTimeout(pullTimer);
+  pullTimer = window.setTimeout(() => {
+    void (async () => {
+      await pushIfDirty();
+      await pullCloud(reason);
+    })();
+  }, 250);
+}
+
+function subscribe(userId: string) {
+  if (channel) void supabase.removeChannel(channel);
+  channel = supabase.channel(`ontrack-sync-v2-${userId}`);
+  for (const table of ['goals', 'tasks', 'calendar_entries'] as const) {
+    channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `user_id=eq.${userId}` }, () => queuePull(`realtime:${table}`));
+  }
+  channel.subscribe(status => {
+    document.documentElement.dataset.cloudRealtime = status.toLowerCase();
   });
-});
+}
 
-void supabase.auth.getSession().then(({ data }) => {
-  if (data.session) return initialiseForSession(data.session);
-});
+async function initialise(next: Session) {
+  session = next;
+  const userId = next.user.id;
+  if (initialisedUser === userId) return;
+  initialisedUser = userId;
+  subscribe(userId);
 
-setInterval(queueSync, 1200);
-window.addEventListener('online', queueSync);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') queueSync();
-});
+  const owner = localStorage.getItem(OWNER_KEY);
+  const local = readLocal();
+  const remote = await fetchRemote(userId);
+
+  if (remote.goals.length === 0 && local?.goals.length && (!owner || owner === userId)) {
+    await pushLocal(userId, local);
+    localStorage.setItem(OWNER_KEY, userId);
+    lastLocal = localSignature();
+    document.documentElement.dataset.cloudSync = 'synced';
+    return;
+  }
+
+  if (remote.goals.length === 0 && owner && owner !== userId) {
+    localStorage.removeItem(STATE_KEY);
+    localStorage.setItem(OWNER_KEY, userId);
+    location.reload();
+    return;
+  }
+
+  const nextLocal = remoteToLocal(remote, local);
+  const serialized = JSON.stringify(nextLocal);
+  localStorage.setItem(OWNER_KEY, userId);
+  lastLocal = serialized;
+  if (serialized !== localSignature()) {
+    localStorage.setItem(STATE_KEY, serialized);
+    location.reload();
+  }
+}
+
+if (!E2E_BYPASS) {
+  supabase.auth.onAuthStateChange((_event, nextSession) => {
+    session = nextSession;
+    if (!nextSession) {
+      initialisedUser = '';
+      if (channel) void supabase.removeChannel(channel);
+      channel = null;
+      return;
+    }
+    void initialise(nextSession).catch(error => {
+      document.documentElement.dataset.cloudSync = 'error';
+      console.error('ONTRACK cloud initialisation failed', error);
+    });
+  });
+
+  void supabase.auth.getSession().then(({ data }) => {
+    if (data.session) return initialise(data.session);
+  });
+
+  window.setInterval(queuePush, 1000);
+  window.addEventListener('online', () => queuePull('online'));
+  window.addEventListener('focus', () => queuePull('focus'));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') queuePull('visible');
+  });
+}
