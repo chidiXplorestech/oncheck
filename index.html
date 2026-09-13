@@ -1,21 +1,86 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0e1116" />
-    <meta name="description" content="ONTRACK — a visual personal operating system for focus, execution, progress, training and planning." />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="ONTRACK" />
-    <link rel="canonical" href="https://ontrack-everyday.netlify.app/" />
-    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
-    <link rel="icon" href="%BASE_URL%ontrack-icon.svg" type="image/svg+xml" />
-    <title>ONTRACK</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-    <script type="module" src="/src/layers.ts"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Professional-friendly two-bedroom rental tracker for Nottinghamshire." />
+  <title>Rental Finder 26 — Nottinghamshire</title>
+  <style>
+    :root{--bg:#f6f6f2;--ink:#172019;--muted:#667068;--line:#d7dcd7;--panel:#fff;--accent:#164f3b;--accent-soft:#e0eee7;--warn:#8a5a13}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}.shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:56px 0 80px}.hero{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start;padding-bottom:38px;border-bottom:1px solid var(--line)}.eyebrow{margin:0 0 10px;color:var(--accent);font-size:12px;font-weight:800;letter-spacing:.15em}.hero h1{margin:0;max-width:800px;font-size:clamp(42px,7vw,76px);line-height:.98;letter-spacing:-.055em;font-weight:760}.subhead{max-width:780px;margin:22px 0 0;color:var(--muted);font-size:18px;line-height:1.55}.heroActions{display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:210px}.badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:#f0f0ed;color:var(--muted);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}.badge span{width:8px;height:8px;border-radius:50%;background:#8a928b}.searchWebButton{border:0;border-radius:12px;padding:12px 14px;background:var(--ink);color:#fff;font-weight:800;cursor:pointer}.searchWebButton:disabled{opacity:.55;cursor:wait}.notice{margin-top:18px;padding:14px 16px;border:1px solid #c9b588;background:#fff8e9;color:#69440b;border-radius:14px;font-size:14px}.filters{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:28px 0;border-bottom:1px solid var(--line)}.filterBlock{background:var(--panel);border:1px solid var(--line);padding:18px;border-radius:16px}.filterBlock label{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:14px}.filterBlock strong{color:var(--ink)}.filterBlock input{width:100%;margin-top:18px;accent-color:var(--accent)}.districts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:transparent;color:var(--muted);padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:700}.chip.active{background:var(--ink);color:white;border-color:var(--ink)}.resultsHeader{display:flex;justify-content:space-between;align-items:end;padding:36px 0 18px}.resultsHeader h2{margin:0;font-size:32px;letter-spacing:-.035em}.freshness{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 30px rgba(23,32,25,.035)}.cardTop,.cardFooter{display:flex;justify-content:space-between;gap:16px;align-items:center}.postcode{font-weight:900;font-size:13px;letter-spacing:.08em}.status{font-size:11px;font-weight:900;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:7px 9px;letter-spacing:.08em}.card h3{margin:32px 0 6px;font-size:24px;line-height:1.15;letter-spacing:-.03em}.location{margin:0;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:28px 0}.metrics div{padding:13px 12px;background:var(--bg);border-radius:12px}.metrics strong{display:block;font-size:22px}.metrics span{color:var(--muted);font-size:11px}.cardFooter{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:14px}.viewButton{display:block;margin-top:16px;padding:12px 14px;text-align:center;background:var(--ink);color:white;text-decoration:none;border-radius:12px;font-weight:800}.empty{margin:12px 0;padding:48px 24px;border:1px solid var(--line);border-radius:16px;background:var(--panel);text-align:center;color:var(--muted)}.empty h3{color:var(--ink);margin-top:0}.footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:12px}.footer a{color:var(--accent);font-weight:700}.demo{color:var(--warn);font-weight:850}.hidden{display:none!important}
+    @media(max-width:760px){.shell{width:min(100% - 20px,1180px);padding-top:28px}.hero{grid-template-columns:1fr}.filters,.grid{grid-template-columns:1fr}.districts{grid-column:auto}.resultsHeader{align-items:start}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.heroActions{align-items:stretch}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">NOTTINGHAMSHIRE · PROFESSIONAL LETS</p>
+      <h1>Find the two-bed that is actually still available.</h1>
+      <p class="subhead">Strictly ≤ £1,000 pcm, exactly 2 bedrooms, verified 600+ sq ft, no student-only lets, prioritised around Nottingham city-centre access.</p>
+    </div>
+    <div class="heroActions">
+      <div class="badge"><span></span> public preview</div>
+      <button id="searchWeb" class="searchWebButton" type="button">Search internet now</button>
+    </div>
+  </header>
+
+  <div id="notice" class="notice">Public deployment is live. <strong>Demo listings are clearly marked.</strong> Live web discovery is ready to use once a server-side Brave Search API key is configured.</div>
+
+  <section class="filters" aria-label="Rental filters">
+    <div class="filterBlock">
+      <label>Max rent <strong id="maxRentLabel">£1000</strong></label>
+      <input id="maxRent" type="range" min="700" max="1000" step="25" value="1000" />
+    </div>
+    <div class="filterBlock">
+      <label>Min floor area <strong id="minSqftLabel">600 sq ft</strong></label>
+      <input id="minSqft" type="range" min="600" max="900" step="25" value="600" />
+    </div>
+    <div class="filterBlock">
+      <label>Max measured commute <strong id="maxCommuteLabel">Any</strong></label>
+      <input id="maxCommute" type="range" min="0" max="60" step="5" value="0" />
+    </div>
+    <div id="districts" class="districts"></div>
+  </section>
+
+  <section class="resultsHeader">
+    <div><p class="eyebrow">MATCHES</p><h2 id="matchCount">4 strict matches</h2></div>
+    <p id="freshness" class="freshness">Preview loaded</p>
+  </section>
+
+  <section id="grid" class="grid"></section>
+  <section id="empty" class="empty hidden"><h3>No strict matches right now.</h3><p>Relax only the commute/postcode choices. The hard £1,000, 2-bedroom and 600 sq ft rules remain enforced.</p></section>
+
+  <footer class="footer">
+    <span><span class="demo">DEMO DATA</span> — fictional seed records; not rental advertisements.</span>
+    <a href="https://github.com/chidiXplorestech/Rental-Finder-26" target="_blank" rel="noreferrer">Source architecture on GitHub ↗</a>
+  </footer>
+</main>
+<script>
+const DISTRICTS=["NG1","NG2","NG3","NG5","NG7","NG9"];
+const listings=[
+{id:"d1",title:"Spacious two-bedroom city apartment",rent_pcm:995,postcode:"NG1 2AB",postcode_district:"NG1",bedrooms:2,floor_area_sqft:685,commute_minutes:8,source:"demo seed",verification_method:"demo",freshness_minutes:0},
+{id:"d2",title:"Two-bedroom flat with separate kitchen",rent_pcm:975,postcode:"NG2 6XY",postcode_district:"NG2",bedrooms:2,floor_area_sqft:720,commute_minutes:18,source:"demo seed",verification_method:"demo",freshness_minutes:0},
+{id:"d3",title:"Large two-bedroom professional let",rent_pcm:925,postcode:"NG5 2ZZ",postcode_district:"NG5",bedrooms:2,floor_area_sqft:640,commute_minutes:21,source:"demo seed",verification_method:"demo",freshness_minutes:0},
+{id:"d4",title:"Two-bedroom home near tram corridor",rent_pcm:950,postcode:"NG9 2AA",postcode_district:"NG9",bedrooms:2,floor_area_sqft:760,commute_minutes:27,source:"demo seed",verification_method:"demo",freshness_minutes:0}
+];
+let selected=new Set(DISTRICTS);
+const $=id=>document.getElementById(id);
+function renderDistricts(){
+  $("districts").innerHTML=DISTRICTS.map(d=>`<button class="chip ${selected.has(d)?"active":""}" data-district="${d}" type="button">${d}</button>`).join("");
+  document.querySelectorAll("[data-district]").forEach(btn=>btn.onclick=()=>{const d=btn.dataset.district;selected.has(d)?selected.delete(d):selected.add(d);renderDistricts();render();});
+}
+function render(){
+  const maxRent=Number($("maxRent").value),minSqft=Number($("minSqft").value),maxCommute=Number($("maxCommute").value);
+  $("maxRentLabel").textContent=`£${maxRent}`;$("minSqftLabel").textContent=`${minSqft} sq ft`;$("maxCommuteLabel").textContent=maxCommute?`${maxCommute} min`:"Any";
+  const rows=listings.filter(x=>x.bedrooms===2&&x.rent_pcm<=Math.min(maxRent,1000)&&x.floor_area_sqft>=Math.max(minSqft,600)&&selected.has(x.postcode_district)&&(!maxCommute||x.commute_minutes<=maxCommute));
+  $("matchCount").textContent=`${rows.length} strict match${rows.length===1?"":"es"}`;
+  $("grid").innerHTML=rows.map(x=>`<article class="card"><div class="cardTop"><span class="postcode">${x.postcode_district}</span><span class="status">DEMO</span></div><h3>${x.title}</h3><p class="location">${x.postcode} · ${x.source}</p><div class="metrics"><div><strong>£${x.rent_pcm}</strong><span>pcm</span></div><div><strong>${x.floor_area_sqft}</strong><span>sq ft</span></div><div><strong>${x.commute_minutes}</strong><span>min to centre</span></div></div><div class="cardFooter"><span>Area: manual demo</span><span>not source-verified</span></div><a class="viewButton" href="https://github.com/chidiXplorestech/Rental-Finder-26" target="_blank" rel="noreferrer">View project source</a></article>`).join("");
+  $("empty").classList.toggle("hidden",rows.length!==0);$("freshness").textContent=`Filtered ${new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
+}
+["maxRent","minSqft","maxCommute"].forEach(id=>$(id).addEventListener("input",render));
+$("searchWeb").addEventListener("click",()=>{const n=$("notice");n.innerHTML="<strong>Live web search is not enabled on this public preview yet.</strong> Add <code>BRAVE_SEARCH_API_KEY</code> server-side and connect the production FastAPI/search service; the deployed UI is ready for it.";n.scrollIntoView({behavior:"smooth",block:"nearest"});});
+renderDistricts();render();
+</script>
+</body>
 </html>
