@@ -89,6 +89,52 @@ function clearCloudCache() {
   for (const key of CLOUD_STATE_KEYS) localStorage.removeItem(key);
 }
 
+function normaliseEmail(value: unknown) {
+  return String(value ?? '').trim().toLowerCase();
+}
+
+function accountEmailFromRaw(raw: string | null) {
+  if (!raw) return '';
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    return normaliseEmail(value?.email);
+  } catch {
+    return '';
+  }
+}
+
+function readQuarantine(): { state: Partial<Record<CloudStateKey, string>> } | null {
+  try {
+    const value = JSON.parse(localStorage.getItem(UNCLAIMED_CACHE_KEY) ?? 'null') as {
+      state?: Partial<Record<CloudStateKey, string>>;
+    } | null;
+    if (!value?.state || typeof value.state !== 'object') return null;
+    return { state: value.state };
+  } catch {
+    return null;
+  }
+}
+
+function recoverQuarantineForSession(next: Session) {
+  const quarantined = readQuarantine();
+  if (!quarantined) return false;
+
+  const cachedEmail = accountEmailFromRaw(quarantined.state['oncheck-account-v2'] ?? null);
+  const sessionEmail = normaliseEmail(next.user.email);
+  if (!cachedEmail || !sessionEmail || cachedEmail !== sessionEmail) return false;
+
+  for (const key of CLOUD_STATE_KEYS) {
+    const raw = quarantined.state[key];
+    if (typeof raw === 'string') localStorage.setItem(key, raw);
+  }
+
+  localStorage.removeItem(UNCLAIMED_CACHE_KEY);
+  localStorage.setItem(OWNER_KEY, next.user.id);
+  document.documentElement.dataset.cloudCacheRecovered = 'email-match';
+  allowLegacySeed = true;
+  return true;
+}
+
 function quarantineUnownedCache() {
   const state = Object.fromEntries(
     CLOUD_STATE_KEYS.flatMap(key => {
@@ -106,7 +152,8 @@ function quarantineUnownedCache() {
   return true;
 }
 
-function prepareCacheForUser(userId: string) {
+function prepareCacheForUser(next: Session) {
+  const userId = next.user.id;
   const owner = localCacheOwner();
   allowLegacySeed = owner === userId;
   let reset = false;
@@ -116,10 +163,18 @@ function prepareCacheForUser(userId: string) {
     reset = true;
     document.documentElement.dataset.cloudCacheReset = 'account-switch';
   } else if (!owner) {
-    // State without an owner cannot safely be attributed to the account that happens
-    // to sign in next. Preserve it locally for manual recovery, but never upload it.
-    reset = quarantineUnownedCache();
-    allowLegacySeed = false;
+    const cachedEmail = accountEmailFromRaw(localStorage.getItem('oncheck-account-v2'));
+    const sessionEmail = normaliseEmail(next.user.email);
+
+    if (cachedEmail && sessionEmail && cachedEmail === sessionEmail) {
+      // Safe one-time upgrade path for genuine pre-owner ONTRACK installs.
+      allowLegacySeed = true;
+      document.documentElement.dataset.cloudCacheClaimed = 'email-match';
+    } else {
+      // Ownerless state that cannot be tied to this account is preserved but never uploaded.
+      reset = quarantineUnownedCache();
+      allowLegacySeed = false;
+    }
   }
 
   localStorage.setItem(OWNER_KEY, userId);
@@ -382,7 +437,15 @@ async function initialise(next: Session) {
   session = next;
   if (initialisedUser === next.user.id) return;
   initialisedUser = next.user.id;
-  const reset = prepareCacheForUser(next.user.id);
+
+  if (recoverQuarantineForSession(next)) {
+    // Restore the preserved pre-owner cache, then restart cleanly so feature modules
+    // rebuild from the recovered state before cloud reconciliation.
+    location.reload();
+    return;
+  }
+
+  const reset = prepareCacheForUser(next);
   if (reset) {
     // The running feature modules may still hold the previous account's state in memory.
     // Reload immediately after clearing the cache so that state can never leak visually
