@@ -109,19 +109,22 @@ function quarantineUnownedCache() {
 function prepareCacheForUser(userId: string) {
   const owner = localCacheOwner();
   allowLegacySeed = owner === userId;
+  let reset = false;
 
   if (owner && owner !== userId) {
     clearCloudCache();
+    reset = true;
     document.documentElement.dataset.cloudCacheReset = 'account-switch';
   } else if (!owner) {
     // State without an owner cannot safely be attributed to the account that happens
     // to sign in next. Preserve it locally for manual recovery, but never upload it.
-    quarantineUnownedCache();
+    reset = quarantineUnownedCache();
     allowLegacySeed = false;
   }
 
   localStorage.setItem(OWNER_KEY, userId);
   document.documentElement.dataset.cloudCacheOwner = userId;
+  return reset;
 }
 
 function conflictKey(userId: string, key: CloudStateKey) {
@@ -379,7 +382,14 @@ async function initialise(next: Session) {
   session = next;
   if (initialisedUser === next.user.id) return;
   initialisedUser = next.user.id;
-  prepareCacheForUser(next.user.id);
+  const reset = prepareCacheForUser(next.user.id);
+  if (reset) {
+    // The running feature modules may still hold the previous account's state in memory.
+    // Reload immediately after clearing the cache so that state can never leak visually
+    // or be written back under the new account.
+    location.reload();
+    return;
+  }
   snapshot = currentSnapshot();
   revisions = new Map();
   subscribe(next.user.id);
