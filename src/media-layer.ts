@@ -94,6 +94,7 @@ async function removeMedia(id: string) {
     }
   }
   if (changed) writeCoverMap(covers);
+  window.dispatchEvent(new CustomEvent('ontrack:media-deleted', { detail: { id } }));
 }
 
 function mediaUrl(record: StoredMedia) {
