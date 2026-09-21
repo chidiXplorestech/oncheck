@@ -11,6 +11,8 @@ let authRoot: HTMLElement | null = null;
 let currentSession: Session | null = null;
 let message = '';
 let busy = false;
+let emailDraft = '';
+let nameDraft = '';
 
 function esc(value: string) {
   return value.replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch] ?? ch));
@@ -78,8 +80,8 @@ function render() {
     authRoot.innerHTML = shell(`
       <div class="auth-heading"><span>CREATE ACCOUNT</span><h1>Start with one account.</h1><p>Your ONTRACK data will belong to this account and follow you across devices.</p></div>
       <form class="auth-form" data-auth-form="signup">
-        <label>Name<input name="name" autocomplete="name" required /></label>
-        <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+        <label>Name<input name="name" autocomplete="name" value="${esc(nameDraft)}" required /></label>
+        <label>Email<input name="email" type="email" autocomplete="email" value="${esc(emailDraft)}" required /></label>
         <label>Password<input name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
         <label>Confirm password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
         ${feedback}
@@ -94,7 +96,7 @@ function render() {
     authRoot.innerHTML = shell(`
       <div class="auth-heading"><span>ACCOUNT RECOVERY</span><h1>Reset your password.</h1><p>Enter your account email. Supabase will send a secure recovery email to verify it is you.</p></div>
       <form class="auth-form" data-auth-form="forgot">
-        <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+        <label>Email<input name="email" type="email" autocomplete="email" value="${esc(emailDraft)}" required /></label>
         ${feedback}
         <button class="auth-primary" ${disabled}>${busy ? 'SENDING…' : 'SEND RECOVERY EMAIL'}</button>
       </form>
@@ -127,7 +129,7 @@ function render() {
   authRoot.innerHTML = shell(`
     <div class="auth-heading"><span>PERSONAL OS</span><h1>Your life. In execution.</h1><p>Sign in to continue to your ONTRACK workspace.</p></div>
     <form class="auth-form" data-auth-form="login">
-      <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+      <label>Email<input name="email" type="email" autocomplete="email" value="${esc(emailDraft)}" required /></label>
       <label>Password<input name="password" type="password" autocomplete="current-password" required /></label>
       ${feedback}
       <button class="auth-primary" ${disabled}>${busy ? 'SIGNING IN…' : 'LOG IN'}</button>
@@ -187,8 +189,30 @@ async function handleRecovery(form: HTMLFormElement) {
   message = 'Password updated. You can now continue securely.';
 }
 
+function friendlyAuthError(error: unknown) {
+  const raw = error instanceof Error ? error.message : String(error ?? '');
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes('load failed')
+    || lower.includes('failed to fetch')
+    || lower.includes('networkerror')
+    || lower.includes('network request failed')
+  ) {
+    return 'ONTRACK could not reach the account service. Check your connection and try again. Your account data has not been deleted.';
+  }
+  return raw || 'Something went wrong. Please try again.';
+}
+
 async function submit(form: HTMLFormElement) {
   if (busy) return;
+
+  // Capture non-sensitive form values before render() replaces the form.
+  const draft = new FormData(form);
+  const nextEmail = String(draft.get('email') ?? '').trim();
+  const nextName = String(draft.get('name') ?? '').trim();
+  if (nextEmail) emailDraft = nextEmail;
+  if (nextName) nameDraft = nextName;
+
   busy = true;
   message = '';
   render();
@@ -199,7 +223,7 @@ async function submit(form: HTMLFormElement) {
     if (action === 'forgot') await handleForgot(form);
     if (action === 'recovery') await handleRecovery(form);
   } catch (error) {
-    message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+    message = friendlyAuthError(error);
   } finally {
     busy = false;
     render();
