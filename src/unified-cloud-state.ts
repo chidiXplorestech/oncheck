@@ -2,6 +2,11 @@ import type { RealtimeChannel, Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
 const E2E_BYPASS = import.meta.env.VITE_E2E_BYPASS_AUTH === '1';
+const OWNER_KEY = 'ontrack-cloud-owner-v2';
+const LEGACY_OWNER_KEY = 'ontrack-cloud-owner-v1';
+const UNCLAIMED_CACHE_KEY = 'ontrack-unclaimed-cache-v1';
+const CONFLICT_KEY_PREFIX = 'ontrack-sync-conflict-v1';
+const DELETED_VALUE = { __ontrack_deleted: true } as const;
 
 /**
  * Every meaningful browser-persisted user state key belongs here.
@@ -33,15 +38,26 @@ document.documentElement.dataset.cloudStateKeys = CLOUD_STATE_KEYS.join(',');
 let session: Session | null = null;
 let channel: RealtimeChannel | null = null;
 let snapshot: Snapshot = new Map();
+let revisions = new Map<CloudStateKey, number>();
 let initialisedUser = '';
 let pushing = false;
 let pulling = false;
 let pushTimer = 0;
 let pullTimer = 0;
 let suppressUntil = 0;
+let allowLegacySeed = false;
 
 function isCloudKey(key: string): key is CloudStateKey {
   return (CLOUD_STATE_KEYS as readonly string[]).includes(key);
+}
+
+function isDeletedValue(value: unknown) {
+  return Boolean(
+    value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && (value as Record<string, unknown>).__ontrack_deleted === true,
+  );
 }
 
 function readRaw(key: CloudStateKey) {
@@ -65,7 +81,63 @@ function currentSnapshot(): Snapshot {
   return new Map(CLOUD_STATE_KEYS.map(key => [key, readRaw(key)]));
 }
 
-function setSyncStatus(status: 'syncing' | 'synced' | 'offline' | 'error', reason = '') {
+function localCacheOwner() {
+  return localStorage.getItem(OWNER_KEY) || localStorage.getItem(LEGACY_OWNER_KEY) || '';
+}
+
+function clearCloudCache() {
+  for (const key of CLOUD_STATE_KEYS) localStorage.removeItem(key);
+}
+
+function quarantineUnownedCache() {
+  const state = Object.fromEntries(
+    CLOUD_STATE_KEYS.flatMap(key => {
+      const raw = localStorage.getItem(key);
+      return raw === null ? [] : [[key, raw]];
+    }),
+  );
+  if (!Object.keys(state).length) return false;
+  localStorage.setItem(UNCLAIMED_CACHE_KEY, JSON.stringify({
+    capturedAt: new Date().toISOString(),
+    state,
+  }));
+  clearCloudCache();
+  document.documentElement.dataset.cloudCacheQuarantined = 'true';
+  return true;
+}
+
+function prepareCacheForUser(userId: string) {
+  const owner = localCacheOwner();
+  allowLegacySeed = owner === userId;
+
+  if (owner && owner !== userId) {
+    clearCloudCache();
+    document.documentElement.dataset.cloudCacheReset = 'account-switch';
+  } else if (!owner) {
+    // State without an owner cannot safely be attributed to the account that happens
+    // to sign in next. Preserve it locally for manual recovery, but never upload it.
+    quarantineUnownedCache();
+    allowLegacySeed = false;
+  }
+
+  localStorage.setItem(OWNER_KEY, userId);
+  document.documentElement.dataset.cloudCacheOwner = userId;
+}
+
+function conflictKey(userId: string, key: CloudStateKey) {
+  return `${CONFLICT_KEY_PREFIX}:${userId}:${key}`;
+}
+
+function preserveConflict(userId: string, key: CloudStateKey, raw: string | null) {
+  localStorage.setItem(conflictKey(userId, key), JSON.stringify({
+    capturedAt: new Date().toISOString(),
+    stateKey: key,
+    raw,
+  }));
+  document.documentElement.dataset.cloudSyncConflict = key;
+}
+
+function setSyncStatus(status: 'syncing' | 'synced' | 'offline' | 'error' | 'conflict', reason = '') {
   document.documentElement.dataset.cloudSync = status;
   document.documentElement.dataset.cloudSyncMode = 'unified';
   if (reason) document.documentElement.dataset.cloudSyncReason = reason;
@@ -83,12 +155,30 @@ async function fetchRows(userId: string): Promise<CloudRow[]> {
 
 function applyRows(rows: CloudRow[], reason: string) {
   const remote = new Map(rows.filter(row => isCloudKey(row.state_key)).map(row => [row.state_key as CloudStateKey, row]));
+  const previousRevisions = revisions;
   let changed = false;
   suppressUntil = Date.now() + 1200;
 
   for (const key of CLOUD_STATE_KEYS) {
     const row = remote.get(key);
-    if (!row) continue;
+    if (!row) {
+      // If this device previously observed the row and it has disappeared, honour the
+      // remote deletion instead of recreating it from stale local cache.
+      if (previousRevisions.has(key) && localStorage.getItem(key) !== null) {
+        localStorage.removeItem(key);
+        changed = true;
+      }
+      continue;
+    }
+
+    if (isDeletedValue(row.value)) {
+      if (localStorage.getItem(key) !== null) {
+        localStorage.removeItem(key);
+        changed = true;
+      }
+      continue;
+    }
+
     const next = encodeCloud(row.value);
     if (localStorage.getItem(key) !== next) {
       localStorage.setItem(key, next);
@@ -96,6 +186,11 @@ function applyRows(rows: CloudRow[], reason: string) {
     }
   }
 
+  revisions = new Map(
+    rows
+      .filter(row => isCloudKey(row.state_key))
+      .map(row => [row.state_key as CloudStateKey, Number(row.revision)]),
+  );
   snapshot = currentSnapshot();
   setSyncStatus('synced', reason);
   if (changed) {
@@ -106,6 +201,7 @@ function applyRows(rows: CloudRow[], reason: string) {
 }
 
 async function seedMissingRows(userId: string, remoteRows: CloudRow[]) {
+  if (!allowLegacySeed) return false;
   const present = new Set(remoteRows.map(row => row.state_key));
   const rows = CLOUD_STATE_KEYS.flatMap(key => {
     if (present.has(key)) return [];
@@ -114,8 +210,46 @@ async function seedMissingRows(userId: string, remoteRows: CloudRow[]) {
     return [{ user_id: userId, state_key: key, value: decodeLocal(raw) }];
   });
   if (!rows.length) return false;
-  const result = await supabase.from('user_state').upsert(rows, { onConflict: 'user_id,state_key' });
-  if (result.error) throw result.error;
+
+  const result = await supabase.from('user_state').insert(rows);
+  // Another device may have created one of the rows after our read. In that case,
+  // simply refetch; never overwrite it with an upsert.
+  if (result.error && result.error.code !== '23505') throw result.error;
+  return true;
+}
+
+async function writeRevisionChecked(
+  userId: string,
+  key: CloudStateKey,
+  value: unknown,
+  expectedRevision: number | undefined,
+) {
+  if (expectedRevision === undefined) {
+    const inserted = await supabase
+      .from('user_state')
+      .insert({ user_id: userId, state_key: key, value })
+      .select('revision')
+      .maybeSingle();
+
+    if (inserted.error?.code === '23505') return false;
+    if (inserted.error) throw inserted.error;
+    if (!inserted.data) return false;
+    revisions.set(key, Number(inserted.data.revision));
+    return true;
+  }
+
+  const updated = await supabase
+    .from('user_state')
+    .update({ value })
+    .eq('user_id', userId)
+    .eq('state_key', key)
+    .eq('revision', expectedRevision)
+    .select('revision')
+    .maybeSingle();
+
+  if (updated.error) throw updated.error;
+  if (!updated.data) return false;
+  revisions.set(key, Number(updated.data.revision));
   return true;
 }
 
@@ -129,7 +263,9 @@ async function pull(reason = 'remote') {
   setSyncStatus('syncing', reason);
   try {
     let rows = await fetchRows(session.user.id);
-    if (await seedMissingRows(session.user.id, rows)) rows = await fetchRows(session.user.id);
+    if (reason === 'login' && await seedMissingRows(session.user.id, rows)) {
+      rows = await fetchRows(session.user.id);
+    }
     applyRows(rows, reason);
   } catch (error) {
     setSyncStatus('error', reason);
@@ -156,37 +292,59 @@ async function pushDirty(reason = 'local') {
 
   pushing = true;
   setSyncStatus('syncing', reason);
+  let conflicted = false;
+
   try {
-    const upserts = dirty
-      .filter(item => item.current !== null)
-      .map(item => ({
-        user_id: session!.user.id,
-        state_key: item.key,
-        value: decodeLocal(item.current!),
-      }));
-    const deleted = dirty.filter(item => item.current === null).map(item => item.key);
+    const remoteRows = await fetchRows(session.user.id);
+    const remoteByKey = new Map(
+      remoteRows
+        .filter(row => isCloudKey(row.state_key))
+        .map(row => [row.state_key as CloudStateKey, row]),
+    );
 
-    if (upserts.length) {
-      const result = await supabase.from('user_state').upsert(upserts, { onConflict: 'user_id,state_key' });
-      if (result.error) throw result.error;
-    }
-    if (deleted.length) {
-      const result = await supabase
-        .from('user_state')
-        .delete()
-        .eq('user_id', session.user.id)
-        .in('state_key', deleted);
-      if (result.error) throw result.error;
+    for (const item of dirty) {
+      const observedRevision = revisions.get(item.key);
+      const currentRemote = remoteByKey.get(item.key);
+      const remoteRevision = currentRemote ? Number(currentRemote.revision) : undefined;
+
+      // If cloud changed since our last pull, do not silently overwrite the newer edit.
+      if (observedRevision !== remoteRevision) {
+        preserveConflict(session.user.id, item.key, item.current);
+        conflicted = true;
+        break;
+      }
+
+      const value = item.current === null ? DELETED_VALUE : decodeLocal(item.current);
+      const written = await writeRevisionChecked(
+        session.user.id,
+        item.key,
+        value,
+        observedRevision,
+      );
+
+      if (!written) {
+        preserveConflict(session.user.id, item.key, item.current);
+        conflicted = true;
+        break;
+      }
+
+      snapshot.set(item.key, item.current);
     }
 
-    snapshot = currentSnapshot();
-    setSyncStatus('synced', reason);
+    if (conflicted) {
+      setSyncStatus('conflict', reason);
+    } else {
+      delete document.documentElement.dataset.cloudSyncConflict;
+      setSyncStatus('synced', reason);
+    }
   } catch (error) {
     setSyncStatus('error', reason);
     console.error('ONTRACK unified cloud push failed', error);
   } finally {
     pushing = false;
   }
+
+  if (conflicted) queuePull('conflict');
 }
 
 function queuePush(reason = 'local') {
@@ -221,7 +379,9 @@ async function initialise(next: Session) {
   session = next;
   if (initialisedUser === next.user.id) return;
   initialisedUser = next.user.id;
+  prepareCacheForUser(next.user.id);
   snapshot = currentSnapshot();
+  revisions = new Map();
   subscribe(next.user.id);
   await pull('login');
 }
@@ -230,6 +390,8 @@ function resetSession() {
   initialisedUser = '';
   session = null;
   snapshot = new Map();
+  revisions = new Map();
+  allowLegacySeed = false;
   if (channel) void supabase.removeChannel(channel);
   channel = null;
 }
