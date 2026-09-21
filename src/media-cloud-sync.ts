@@ -6,6 +6,9 @@ const DB_VERSION = 1;
 const STORE_NAME = 'media';
 const BUCKET = 'user-media';
 const E2E_BYPASS = import.meta.env.VITE_E2E_BYPASS_AUTH === '1';
+const MEDIA_OWNER_KEY = 'ontrack-media-cache-owner-v1';
+const LEGACY_CLOUD_OWNER_KEY = 'ontrack-cloud-owner-v1';
+const PENDING_DELETE_PREFIX = 'ontrack-media-pending-delete-v1';
 
 type StoredMedia = {
   id: string;
@@ -50,6 +53,22 @@ function writeIndex(userId: string, ids: string[]) {
   localStorage.setItem(indexKey(userId), JSON.stringify(ids));
 }
 
+function pendingDeleteKey(userId: string) {
+  return `${PENDING_DELETE_PREFIX}:${userId}`;
+}
+
+function readPendingDeletes(userId: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(pendingDeleteKey(userId)) ?? '[]') as string[];
+  } catch {
+    return [];
+  }
+}
+
+function writePendingDeletes(userId: string, ids: string[]) {
+  localStorage.setItem(pendingDeleteKey(userId), JSON.stringify([...new Set(ids)]));
+}
+
 function openDb(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
@@ -87,6 +106,27 @@ async function putLocal(item: StoredMedia) {
 async function deleteLocal(id: string) {
   const db = await openDb();
   await request(db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(id));
+}
+
+async function clearLocal() {
+  const db = await openDb();
+  await request(db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).clear());
+}
+
+async function prepareCacheForUser(userId: string) {
+  const owner = localStorage.getItem(MEDIA_OWNER_KEY) || localStorage.getItem(LEGACY_CLOUD_OWNER_KEY) || '';
+  const local = await listLocal();
+  let reset = false;
+
+  if ((owner && owner !== userId) || (!owner && local.length > 0)) {
+    await clearLocal();
+    reset = true;
+    document.documentElement.dataset.mediaCacheReset = owner ? 'account-switch' : 'unowned-cache';
+  }
+
+  localStorage.setItem(MEDIA_OWNER_KEY, userId);
+  document.documentElement.dataset.mediaCacheOwner = userId;
+  return reset;
 }
 
 async function fetchRemote(userId: string): Promise<RemoteMedia[]> {
@@ -169,16 +209,18 @@ async function syncMedia(reason = 'periodic') {
       }
     }
 
-    // A remote row that is missing locally after this device has already been hydrated means a local delete.
-    if (previousRemote.size) {
-      for (const item of remote) {
-        const id = item.client_id || item.id;
-        if (previousRemote.has(id) && !localById.has(id)) {
-          await removeRemote(item);
-          remoteByClient.delete(id);
-        }
+    // Local deletions are explicit and persisted; absence from IndexedDB may be browser
+    // eviction or an account-cache reset and must never be interpreted as a cloud delete.
+    const pendingDeletes = new Set(readPendingDeletes(userId));
+    for (const id of [...pendingDeletes]) {
+      const item = remoteByClient.get(id);
+      if (item) {
+        await removeRemote(item);
+        remoteByClient.delete(id);
       }
+      pendingDeletes.delete(id);
     }
+    writePendingDeletes(userId, [...pendingDeletes]);
 
     // Download files created on another device.
     for (const [id, item] of remoteByClient) {
@@ -192,8 +234,9 @@ async function syncMedia(reason = 'periodic') {
     const refreshedRemote = await fetchRemote(userId);
     const refreshedIds = new Set(refreshedRemote.map(item => item.client_id || item.id));
     const latestLocal = await listLocal();
+    const pendingAfterDeletes = new Set(readPendingDeletes(userId));
     for (const item of latestLocal) {
-      if (!refreshedIds.has(item.id)) await uploadOne(userId, item);
+      if (!pendingAfterDeletes.has(item.id) && !refreshedIds.has(item.id)) await uploadOne(userId, item);
     }
 
     const finalRemote = await fetchRemote(userId);
@@ -226,6 +269,13 @@ function subscribe(userId: string) {
 
 async function initialise(next: Session) {
   session = next;
+  const reset = await prepareCacheForUser(next.user.id);
+  if (reset) {
+    // media-layer keeps an in-memory view of IndexedDB. Reload after a cache reset so
+    // previous-account media cannot remain visible or be re-uploaded.
+    location.reload();
+    return;
+  }
   subscribe(next.user.id);
   await syncMedia('login');
 }
@@ -250,5 +300,13 @@ if (!E2E_BYPASS) {
   window.addEventListener('focus', () => queue('focus'));
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') queue('visible');
+  });
+
+  window.addEventListener('ontrack:media-deleted', event => {
+    if (!session) return;
+    const id = String((event as CustomEvent<{ id?: string }>).detail?.id ?? '');
+    if (!id) return;
+    writePendingDeletes(session.user.id, [...readPendingDeletes(session.user.id), id]);
+    queue('local-delete');
   });
 }
