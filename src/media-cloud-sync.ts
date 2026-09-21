@@ -270,8 +270,14 @@ function subscribe(userId: string) {
 async function initialise(next: Session) {
   session = next;
   const reset = await prepareCacheForUser(next.user.id);
+  if (reset) {
+    // media-layer keeps an in-memory view of IndexedDB. Reload after a cache reset so
+    // previous-account media cannot remain visible or be re-uploaded.
+    location.reload();
+    return;
+  }
   subscribe(next.user.id);
-  await syncMedia(reset ? 'account-switch' : 'login');
+  await syncMedia('login');
 }
 
 if (!E2E_BYPASS) {
