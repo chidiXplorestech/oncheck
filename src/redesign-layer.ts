@@ -286,7 +286,8 @@ function refreshHomeIdentity() {
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
   const name = (account.name || '').trim() || 'there';
   const heading = document.querySelector<HTMLElement>('.ot-home-head h1');
-  if (heading) heading.textContent = `${greeting()}, ${name}.`;
+  const next = `${greeting()}, ${name}.`;
+  if (heading && heading.textContent !== next) heading.textContent = next;
 }
 
 function patchHome() {
