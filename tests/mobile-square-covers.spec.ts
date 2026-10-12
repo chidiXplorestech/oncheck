@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+async function openFirstGoal(page: import('@playwright/test').Page) {
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator('.ot-plans-dialog [data-action="edit-goal"]').first().click();
+}
+
 async function expectSquareCover(page: import('@playwright/test').Page, selector: string) {
   const box = await page.locator(selector).first().boundingBox();
   expect(box).not.toBeNull();
@@ -12,10 +17,13 @@ for (const viewport of [
   { name: '390px iPhone', width: 390, height: 844 },
   { name: '768px tablet', width: 768, height: 1024 },
 ]) {
-  test(`${viewport.name} uses a responsive 1:1 goal cover capped at 512px`, async ({ page }) => {
+  test(`${viewport.name} keeps the redesigned home within the viewport`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('/');
-    await expectSquareCover(page, '.goal-row > .cover');
+    const home = await page.locator('.ot-home').boundingBox();
+    expect(home).not.toBeNull();
+    expect(home!.x).toBeGreaterThanOrEqual(0);
+    expect(home!.x + home!.width).toBeLessThanOrEqual(viewport.width + 1);
 
     const dimensions = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
@@ -25,17 +33,17 @@ for (const viewport of [
   });
 }
 
-test('mobile goal editor preview uses the same responsive square contract', async ({ page }) => {
+test('mobile goal editor preview keeps the existing square cover contract', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"]').first().click();
+  await openFirstGoal(page);
   await expectSquareCover(page, '.preview-cover');
 });
 
-test('desktop goal cover dimensions remain owned by the desktop design', async ({ page }) => {
+test('desktop goal editor remains accessible from the focused plans navigator', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  const box = await page.locator('.goal-row > .cover').first().boundingBox();
-  expect(box).not.toBeNull();
-  expect(Math.abs(box!.width - box!.height)).toBeGreaterThan(1.5);
+  await openFirstGoal(page);
+  await expect(page.locator('#goalForm')).toBeVisible();
+  await expect(page.locator('.preview-cover')).toBeVisible();
 });
