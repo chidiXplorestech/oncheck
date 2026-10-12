@@ -46,7 +46,8 @@ test('mobile Change cover can use an existing uploaded image', async ({ page }) 
   await firstReload;
 
   await page.locator('[data-nav="overview"]').click();
-  await page.locator('[data-action="edit-goal"]').first().click();
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator('.ot-plans-dialog [data-action="edit-goal"]').first().click();
   await page.locator('[data-action="goal-cover"]').click();
 
   await expect(page.locator('.mobile-media-sheet')).toBeVisible();
@@ -57,6 +58,7 @@ test('mobile Change cover can use an existing uploaded image', async ({ page }) 
   await secondReload;
 
   await page.locator('[data-nav="overview"]').click();
-  await page.locator('[data-action="edit-goal"]').first().click();
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator('.ot-plans-dialog [data-action="edit-goal"]').first().click();
   await expect(page.locator('.preview-cover img[data-db-cover]')).toBeVisible();
 });

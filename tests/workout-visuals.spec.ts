@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+async function openGoal(page: import('@playwright/test').Page, id: string) {
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator(`.ot-plans-dialog [data-action="edit-goal"][data-id="${id}"]`).click();
+}
+
 test('Training artwork follows the existing Monday Wednesday Thursday structure', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"][data-id="training"]').click();
+  await openGoal(page, 'training');
 
   const banner = page.locator('.training-visual-banner');
   await expect(banner).toBeVisible();

@@ -4,7 +4,8 @@ for (const width of [320, 390, 430]) {
   test(`${width}px goal editor keeps nav, checklist and actions responsive`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
-    await page.locator('[data-action="edit-goal"]').first().click();
+    await page.locator('[data-v3-all-plans]').click();
+    await page.locator('.ot-plans-dialog [data-action="edit-goal"]').first().click();
 
     const viewport = page.viewportSize()!;
     const sidebar = await page.locator('.sidebar').boundingBox();

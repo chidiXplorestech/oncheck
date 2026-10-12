@@ -10,6 +10,7 @@ import './media-cloud-sync';
 import './workout-layer';
 import './workout-order';
 import './workout-visuals';
+import './redesign-layer';
 import './pwa';
 
 document.documentElement.dataset.oncheckLayers = 'ready';

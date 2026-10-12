@@ -1,0 +1,277 @@
+:root{
+  --ot-bg:#0b0d0f;
+  --ot-panel:#111417;
+  --ot-panel-2:#15191d;
+  --ot-line:#242a30;
+  --ot-text:#f4f6f7;
+  --ot-muted:#8e989f;
+  --ot-soft:#c7ced3;
+  --ot-lime:#b8ff32;
+  --ot-lime-dim:#7cae20;
+}
+
+html,body{background:var(--ot-bg)!important;color:var(--ot-text)!important}
+body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+.shell{grid-template-columns:236px minmax(0,1fr)!important;background:var(--ot-bg)!important}
+.sidebar{
+  background:#0d0f11!important;
+  border-right:1px solid #1c2024!important;
+  padding:22px 16px!important;
+  gap:26px!important;
+}
+.brand{
+  color:var(--ot-text)!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  letter-spacing:.04em!important;
+  display:flex!important;
+  align-items:center;
+  gap:10px;
+  min-height:38px;
+}
+.ot-brand-mark{width:27px;height:27px;display:grid;place-items:center;color:#f7f7f5}
+.ot-brand-mark svg{width:100%;height:100%}
+.sidebar nav{gap:5px!important}
+.nav-btn{
+  min-height:44px!important;
+  border-radius:10px!important;
+  color:#808990!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  gap:11px!important;
+  padding:0 12px!important;
+  transition:background .18s ease,color .18s ease,transform .18s ease!important;
+}
+.nav-btn:hover{background:#14181b!important;color:#dce1e4!important}
+.nav-btn.active{background:#181d20!important;color:#f5f6f7!important}
+.nav-btn.active:before{content:"";width:3px;height:18px;border-radius:4px;background:var(--ot-lime);position:absolute;left:-1px}
+.nav-btn{position:relative}
+.nav-btn>span:first-child{font-size:14px!important;color:inherit}
+.profile{
+  margin-top:auto!important;
+  background:transparent!important;
+  border-top:1px solid #1f2428!important;
+  border-radius:0!important;
+  padding:16px 4px 2px!important;
+}
+.profile strong{font-size:12px!important}
+.profile span{font-size:10px!important;color:var(--ot-muted)!important}
+.workspace{background:var(--ot-bg)!important;overflow:auto!important}
+
+.ot-home{max-width:1440px;margin:0 auto;padding:34px 42px 56px}
+.ot-home-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:34px}
+.ot-date,.ot-context{margin:0;color:var(--ot-muted);font-size:12px}
+.ot-date{text-transform:uppercase;letter-spacing:.13em;font-size:10px;font-weight:700}
+.ot-home-head h1{margin:8px 0 8px;font-size:clamp(30px,4vw,52px);line-height:1.02;font-weight:560;letter-spacing:-.055em}
+.ot-sync{height:32px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ot-line);border-radius:999px;padding:0 11px;color:var(--ot-muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.ot-sync span{width:6px;height:6px;border-radius:50%;background:var(--ot-lime);box-shadow:0 0 0 4px #b8ff3213}
+
+.ot-command{
+  background:linear-gradient(180deg,#14181b 0%,#101315 100%);
+  border:1px solid #252b30;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 22px 60px #00000026;
+  margin-bottom:24px;
+}
+.ot-command-kicker{display:flex;align-items:center;gap:8px;color:#aeb6bb;font-size:9px;font-weight:750;letter-spacing:.16em;margin-bottom:10px}
+.ot-pulse{width:7px;height:7px;border-radius:50%;background:var(--ot-lime);box-shadow:0 0 0 4px #b8ff3212}
+.ot-command textarea{
+  width:100%;
+  min-height:86px;
+  resize:none;
+  border:0!important;
+  background:transparent!important;
+  color:var(--ot-text)!important;
+  font-size:19px!important;
+  line-height:1.45;
+  padding:7px 4px 12px!important;
+  box-shadow:none!important;
+}
+.ot-command textarea::placeholder{color:#626b70}
+.ot-command-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:12px;border-top:1px solid #23282c}
+.ot-chips{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ot-chips button,.ot-section-head button{
+  border:1px solid #292f34;
+  background:#14181b;
+  color:#929ca2;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:10px;
+  cursor:pointer;
+}
+.ot-chips button:hover,.ot-section-head button:hover{color:#e8ecef;border-color:#3b4248}
+.ot-plan-button{
+  flex:0 0 auto;
+  min-width:116px;
+  height:40px;
+  border:0;
+  border-radius:10px;
+  background:var(--ot-lime);
+  color:#0b0d0f;
+  font-weight:800;
+  font-size:11px;
+  cursor:pointer;
+}
+.ot-plan-button span{margin-left:8px}
+.ot-command.busy{opacity:.76;pointer-events:none}
+.ot-plan-status{padding-top:10px;color:#aab3b8;font-size:10px}
+
+.ot-home-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
+.ot-section{
+  border-top:1px solid var(--ot-line);
+  padding:21px 0 10px;
+  min-width:0;
+}
+.ot-today{grid-row:span 2;padding-right:24px;border-right:1px solid var(--ot-line)}
+.ot-up-next,.ot-priorities{padding-left:8px}
+.ot-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.ot-section-head span{display:block;color:#747e84;font-size:9px;font-weight:750;letter-spacing:.16em;margin-bottom:5px}
+.ot-section-head h2{margin:0;font-size:18px;font-weight:600;letter-spacing:-.025em}
+.ot-section-head button{background:transparent;border-color:transparent;padding:5px 0}
+
+.ot-focus-list{display:flex;flex-direction:column}
+.ot-focus-row{
+  width:100%;
+  display:grid;
+  grid-template-columns:34px 1fr;
+  align-items:center;
+  gap:10px;
+  min-height:58px;
+  padding:8px 0;
+  border:0;
+  border-bottom:1px solid #1c2125;
+  background:transparent;
+  color:var(--ot-text);
+  text-align:left;
+  cursor:pointer;
+}
+.ot-focus-row>span:last-child{display:flex;flex-direction:column;gap:3px;font-size:13px}
+.ot-focus-row small{color:var(--ot-muted);font-size:9px}
+.ot-focus-row.done{opacity:.45}
+.ot-focus-row.done>span:last-child{text-decoration:line-through}
+.ot-check{width:24px;height:24px;border:1px solid #444d52;border-radius:50%;display:grid!important;place-items:center!important;font-size:10px!important;color:#0b0d0f;background:transparent}
+.ot-focus-row.done .ot-check{background:var(--ot-lime);border-color:var(--ot-lime)}
+.ot-suggest-dot{width:7px;height:7px;border-radius:50%;background:#596168;margin-left:9px}
+.ot-limit{margin:14px 0 0;color:#697278;font-size:9px}
+
+.ot-next-list,.ot-priority-list{display:flex;flex-direction:column}
+.ot-next-row,.ot-priority-row{
+  border:0;
+  border-bottom:1px solid #1d2226;
+  background:transparent;
+  color:var(--ot-text);
+  display:grid;
+  align-items:center;
+  text-align:left;
+  cursor:pointer;
+}
+.ot-next-row{grid-template-columns:92px 1fr auto;gap:12px;padding:12px 0}
+.ot-next-row time{display:flex;flex-direction:column;gap:2px}
+.ot-next-row time b{font-size:10px;color:#dfe3e5}
+.ot-next-row time span,.ot-duration{font-size:9px;color:var(--ot-muted)}
+.ot-next-title{font-size:12px}
+.ot-priority-row{grid-template-columns:34px 1fr 104px;gap:12px;padding:13px 0}
+.ot-priority-index{font-size:9px;color:#5f686e}
+.ot-priority-copy{display:flex;flex-direction:column;gap:3px}
+.ot-priority-copy b{font-size:12px;font-weight:620}
+.ot-priority-copy small{font-size:9px;color:var(--ot-muted)}
+.ot-priority-progress{display:grid;grid-template-columns:1fr 30px;gap:8px;align-items:center}
+.ot-priority-progress i{height:2px;background:linear-gradient(90deg,var(--ot-lime) var(--p),#252b2f var(--p))}
+.ot-priority-progress em{font-style:normal;font-size:9px;color:#8d979d;text-align:right}
+.ot-empty{color:#6f797f;font-size:11px;margin:14px 0}
+
+.ot-plan-dialog{width:min(720px,calc(100vw - 32px));max-height:88vh;padding:0;border:1px solid #30363b;border-radius:18px;background:#101315;color:var(--ot-text)}
+.ot-plan-dialog::backdrop{background:#030506c7;backdrop-filter:blur(10px)}
+.ot-plan-panel{padding:24px}
+.ot-plan-panel header{display:flex;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid #23282c}
+.ot-plan-panel header span,.ot-plan-panel section h3{font-size:9px;letter-spacing:.16em;color:#788288}
+.ot-plan-panel header h2{margin:5px 0 7px;font-size:28px;font-weight:600;letter-spacing:-.04em}
+.ot-plan-panel header p{margin:0;color:#9ca5aa;line-height:1.55;font-size:11px;max-width:560px}
+.ot-plan-panel header button{width:32px;height:32px;border-radius:50%;border:1px solid #2d3438;background:transparent;color:#aaa;font-size:18px}
+.ot-plan-meta{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0}
+.ot-plan-meta span{border:1px solid #2b3136;border-radius:999px;padding:6px 9px;font-size:9px;color:#a5aeb3;text-transform:capitalize}
+.ot-plan-panel section{padding:15px 0;border-top:1px solid #202529}
+.ot-plan-panel section h3{margin:0 0 12px}
+.ot-plan-tasks{display:grid;gap:8px}
+.ot-plan-tasks div{display:flex;gap:10px;font-size:11px;color:#d6dbde}
+.ot-plan-tasks span{color:#697278}
+.ot-slot-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ot-slot-list div{border:1px solid #282e33;border-radius:10px;padding:11px;display:flex;flex-direction:column;gap:3px}
+.ot-slot-list b{font-size:10px}
+.ot-slot-list span,.ot-slot-list em{font-size:9px;color:#899399;font-style:normal}
+.ot-assumptions p{margin:0;color:#899399;font-size:10px;line-height:1.55}
+.ot-plan-panel footer{display:flex;justify-content:flex-end;gap:9px;padding-top:18px}
+.ot-secondary,.ot-apply{height:40px;border-radius:10px;padding:0 14px;font-size:10px;font-weight:750;cursor:pointer}
+.ot-secondary{background:#15191c;border:1px solid #2d3338;color:#adb5ba}
+.ot-apply{background:var(--ot-lime);border:0;color:#0b0d0f}
+
+@media(max-width:1050px){
+  .shell{grid-template-columns:78px minmax(0,1fr)!important}
+  .sidebar{padding:20px 10px!important}
+  .brand{justify-content:center}
+  .brand>span:last-child,.ot-nav-label,.profile>div:last-child{display:none!important}
+  .nav-btn{justify-content:center!important;padding:0!important}
+  .nav-btn>span:first-child{font-size:15px!important}
+  .ot-home{padding:30px 28px 48px}
+}
+@media(max-width:780px){
+  .shell{display:block!important}
+  .sidebar{
+    position:fixed!important;
+    left:0;right:0;bottom:0;top:auto!important;
+    z-index:50;
+    border-right:0!important;
+    border-top:1px solid #20252a!important;
+    border-bottom:0!important;
+    padding:7px max(10px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))!important;
+    background:#0d0f11ed!important;
+    backdrop-filter:blur(18px);
+  }
+  .sidebar .brand,.profile{display:none!important}
+  .sidebar nav{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:4px!important}
+  .nav-btn{min-width:0!important;height:45px!important;border-radius:9px!important}
+  .nav-btn.active:before{display:none}
+  .workspace{padding-bottom:74px}
+  .ot-home{padding:24px 18px 36px}
+  .ot-home-head{margin-bottom:24px}
+  .ot-home-head h1{font-size:34px}
+  .ot-sync{display:none}
+  .ot-command{border-radius:15px;padding:15px}
+  .ot-command textarea{font-size:16px!important;min-height:92px}
+  .ot-command-actions{align-items:flex-end}
+  .ot-chips{max-width:70%;overflow:hidden;max-height:31px;flex-wrap:nowrap}
+  .ot-chips button{white-space:nowrap}
+  .ot-plan-button{min-width:90px}
+  .ot-home-grid{grid-template-columns:1fr;gap:0}
+  .ot-today{grid-row:auto;padding-right:0;border-right:0}
+  .ot-up-next,.ot-priorities{padding-left:0}
+  .ot-slot-list{grid-template-columns:1fr 1fr}
+}
+@media(max-width:430px){
+  .ot-home{padding-inline:15px}
+  .ot-home-head h1{font-size:31px}
+  .ot-command-actions{display:block}
+  .ot-chips{display:none}
+  .ot-plan-button{width:100%;margin-top:8px}
+  .ot-priority-row{grid-template-columns:28px 1fr 78px}
+  .ot-next-row{grid-template-columns:76px 1fr auto}
+  .ot-slot-list{grid-template-columns:1fr}
+}
+
+.ot-plans-dialog{width:min(620px,calc(100vw - 28px));max-height:82vh;padding:0;border:1px solid #30363b;border-radius:18px;background:#101315;color:var(--ot-text)}
+.ot-plans-dialog::backdrop{background:#030506c7;backdrop-filter:blur(10px)}
+.ot-plans-panel{padding:22px}
+.ot-plans-panel header{display:flex;justify-content:space-between;gap:18px;padding-bottom:16px;border-bottom:1px solid #23282c}
+.ot-plans-panel header span{font-size:9px;letter-spacing:.16em;color:#788288}
+.ot-plans-panel header h2{margin:5px 0 0;font-size:22px;font-weight:600;letter-spacing:-.035em}
+.ot-plans-panel header button{width:32px;height:32px;border-radius:50%;border:1px solid #2d3438;background:transparent;color:#aaa;font-size:18px}
+.ot-plans-list{max-height:62vh;overflow:auto}
+.ot-plan-row{width:100%;display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:10px;padding:13px 2px;border:0;border-bottom:1px solid #1f2428;background:transparent;color:var(--ot-text);text-align:left;cursor:pointer}
+.ot-plan-row>span:nth-child(2){display:flex;flex-direction:column;gap:3px}
+.ot-plan-row b{font-size:12px;font-weight:620}
+.ot-plan-row small,.ot-plan-row em{font-size:9px;color:var(--ot-muted);font-style:normal}
+.ot-plan-status-dot{width:7px;height:7px;border-radius:50%;background:#626b70}
+.ot-plan-status-dot.active{background:var(--ot-lime)}
+.ot-plan-status-dot.completed{background:#dfe4e7}
+.ot-plan-status-dot.on-hold{background:#6b7378}
