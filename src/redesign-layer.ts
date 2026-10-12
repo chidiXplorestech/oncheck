@@ -520,6 +520,25 @@ function previewPlan(plan: AiPlan, sourceText: string) {
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
 }
 
+function openPlanningStage() {
+  document.querySelector('.ot-thinking-stage')?.remove();
+  const stage = document.createElement('div');
+  stage.className = 'ot-thinking-stage';
+  stage.innerHTML = `
+    <div class="ot-thinking-mark">${brandMark()}</div>
+    <p>Making sense of your week…</p>
+  `;
+  document.body.append(stage);
+  requestAnimationFrame(() => stage.classList.add('show'));
+}
+
+function closePlanningStage() {
+  const stage = document.querySelector<HTMLElement>('.ot-thinking-stage');
+  if (!stage) return;
+  stage.classList.remove('show');
+  window.setTimeout(() => stage.remove(), 240);
+}
+
 let planning = false;
 async function submitPlan(form: HTMLFormElement) {
   if (planning) return;
@@ -532,6 +551,7 @@ async function submitPlan(form: HTMLFormElement) {
   status.hidden = false;
   status.textContent = 'Understanding your plan…';
   form.classList.add('busy');
+  openPlanningStage();
 
   const timer = window.setTimeout(() => {
     status.textContent = 'Checking your priorities and available space…';
@@ -541,9 +561,11 @@ async function submitPlan(form: HTMLFormElement) {
     const plan = await requestPlan(intent);
     window.clearTimeout(timer);
     status.textContent = 'Plan ready.';
+    closePlanningStage();
     previewPlan(plan, intent);
   } catch (error) {
     window.clearTimeout(timer);
+    closePlanningStage();
     status.textContent = error instanceof Error ? error.message : 'ONTRACK could not create the plan.';
   } finally {
     planning = false;
