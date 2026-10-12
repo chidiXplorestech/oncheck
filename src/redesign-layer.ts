@@ -253,7 +253,7 @@ function buildHome() {
         </section>
 
         <section class="ot-section ot-priorities">
-          <div class="ot-section-head"><div><span>CURRENT FOCUS</span><h2>Active priorities</h2></div><button data-nav="goals" type="button">All plans →</button></div>
+          <div class="ot-section-head"><div><span>CURRENT FOCUS</span><h2>Active priorities</h2></div><button data-v3-all-plans type="button">All plans →</button></div>
           <div class="ot-priority-list">
             ${goals.slice(0, 3).map((goal, index) => `
               <button class="ot-priority-row" type="button" data-action="select-goal" data-id="${goal.id}">
@@ -373,6 +373,35 @@ async function requestPlan(intent: string) {
   return payload.plan as AiPlan;
 }
 
+function openPlans() {
+  document.querySelector<HTMLDialogElement>('.ot-plans-dialog')?.close();
+  const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+  const dialog = document.createElement('dialog');
+  dialog.className = 'ot-plans-dialog';
+  dialog.innerHTML = `
+    <div class="ot-plans-panel">
+      <header>
+        <div><span>YOUR PLANS</span><h2>Everything, without making everything urgent.</h2></div>
+        <button type="button" data-v3-plans-close aria-label="Close">×</button>
+      </header>
+      <div class="ot-plans-list">
+        ${state.goals.map(goal => `
+          <button type="button" class="ot-plan-row" data-action="edit-goal" data-id="${goal.id}">
+            <span class="ot-plan-status-dot ${goal.status}"></span>
+            <span><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${goal.status.replace('-', ' ')}</small></span>
+            <em>${progress(goal)}%</em>
+          </button>`).join('')}
+      </div>
+    </div>`;
+  document.body.append(dialog);
+  dialog.querySelector('[data-v3-plans-close]')?.addEventListener('click', () => dialog.close());
+  dialog.querySelectorAll('[data-action="edit-goal"]').forEach(button => {
+    button.addEventListener('click', () => dialog.close());
+  });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.showModal();
+}
+
 function previewPlan(plan: AiPlan, sourceText: string) {
   document.querySelector<HTMLDialogElement>('.ot-plan-dialog')?.close();
   const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
@@ -470,8 +499,13 @@ async function submitPlan(form: HTMLFormElement) {
 }
 
 document.addEventListener('click', event => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans]');
   if (!target) return;
+
+  if (target.hasAttribute('data-v3-all-plans')) {
+    openPlans();
+    return;
+  }
 
   if (target.dataset.v3Prompt) {
     const input = document.querySelector<HTMLTextAreaElement>('[data-v3-plan-input]');
