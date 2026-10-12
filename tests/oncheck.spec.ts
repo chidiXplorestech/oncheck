@@ -26,7 +26,8 @@ test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) =>
   await expect(page.locator('.ot-command')).toBeVisible();
   await expect(page.locator('.hero')).toHaveCount(0);
   await expect(page.locator('.ot-home-head h1')).toBeVisible();
-  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(5);
+  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(4);
+  await expect(page.locator('.oncheck-system-nav')).toBeHidden();
 });
 
 test('Save Changes persists a goal through navigation and reload', async ({ page }) => {
