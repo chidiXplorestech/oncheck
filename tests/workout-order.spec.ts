@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 async function openTraining(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"][data-id="training"]').click();
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator('.ot-plans-dialog [data-action="edit-goal"][data-id="training"]').click();
   await expect(page.locator('.training-space')).toBeVisible();
 }
 
