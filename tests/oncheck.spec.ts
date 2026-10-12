@@ -14,18 +14,19 @@ test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) =>
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
-  const sidebar = page.locator('.sidebar');
-  const sidebarBox = await sidebar.boundingBox();
-  expect(sidebarBox).not.toBeNull();
-  expect(sidebarBox!.x).toBe(0);
-  expect(sidebarBox!.width).toBeGreaterThanOrEqual(220);
-  expect(sidebarBox!.width).toBeLessThanOrEqual(245);
-  await expect(sidebar).not.toHaveCSS('position', 'fixed');
+  const dock = page.locator('.sidebar');
+  const dockBox = await dock.boundingBox();
+  expect(dockBox).not.toBeNull();
+  expect(dockBox!.y).toBeGreaterThan(800);
+  expect(dockBox!.height).toBeLessThan(70);
+  expect(dockBox!.x).toBeGreaterThan(300);
+  expect(dockBox!.x + dockBox!.width).toBeLessThan(1140);
+  await expect(dock).toHaveCSS('position', 'fixed');
 
   await expect(page.locator('.ot-home')).toBeVisible();
   await expect(page.locator('.ot-command')).toBeVisible();
   await expect(page.locator('.hero')).toHaveCount(0);
-  await expect(page.locator('.ot-home-head h1')).toBeVisible();
+  await expect(page.locator('.ot-intro h1')).toContainText('What do you want');
   await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(4);
   await expect(page.locator('.oncheck-system-nav')).toBeHidden();
 });
@@ -57,7 +58,7 @@ test('unsaved goal fields survive checklist actions', async ({ page }) => {
 
 test('Account Settings saves and updates the existing profile and greeting', async ({ page }) => {
   await page.goto('/');
-  await page.locator('.profile').click();
+  await page.locator('.ot-sync').click();
   await expect(page.locator('.system-dialog')).toBeVisible();
 
   await page.getByLabel('Display name').fill('Chidi');
@@ -65,12 +66,10 @@ test('Account Settings saves and updates the existing profile and greeting', asy
   await page.getByRole('button', { name: 'Save Account' }).click();
   await page.getByRole('button', { name: 'Close' }).click();
 
-  await expect(page.locator('.profile strong')).toHaveText('Chidi');
-  await expect(page.locator('.profile span')).toHaveText('ONTRACK');
-  await expect(page.locator('.ot-home-head h1')).toContainText('Chidi');
+  await expect(page.locator('.ot-eyebrow')).toContainText('Chidi');
 
   await page.reload();
-  await expect(page.locator('.profile strong')).toHaveText('Chidi');
+  await expect(page.locator('.ot-eyebrow')).toContainText('Chidi');
 });
 
 test('Today Focus remains functional from the new Today surface', async ({ page }) => {
@@ -113,15 +112,16 @@ test('320px portrait has no page-level horizontal overflow and Settings remains 
   expect(dialogBox!.width).toBeLessThanOrEqual(320);
 });
 
-test('phone landscape uses the compact side dock and does not overflow the page', async ({ page }) => {
+test('phone landscape keeps the floating dock contained and does not overflow the page', async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/');
 
   const sidebarBox = await page.locator('.sidebar').boundingBox();
   expect(sidebarBox).not.toBeNull();
-  expect(sidebarBox!.x).toBeLessThanOrEqual(10);
-  expect(sidebarBox!.width).toBeLessThanOrEqual(82);
-  expect(sidebarBox!.height).toBeGreaterThan(350);
+  expect(sidebarBox!.y).toBeGreaterThan(300);
+  expect(sidebarBox!.height).toBeLessThan(70);
+  expect(sidebarBox!.x).toBeGreaterThanOrEqual(0);
+  expect(sidebarBox!.x + sidebarBox!.width).toBeLessThanOrEqual(844);
 
   const dimensions = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
