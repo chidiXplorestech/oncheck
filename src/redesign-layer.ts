@@ -606,11 +606,40 @@ document.addEventListener('submit', event => {
   void submitPlan(form);
 });
 
+function bindLiquidDock() {
+  const dock = document.querySelector<HTMLElement>('.sidebar');
+  if (!dock || dock.dataset.liquidBound === '1') return;
+  dock.dataset.liquidBound = '1';
+
+  const update = (event: PointerEvent) => {
+    const rect = dock.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+    dock.style.setProperty('--glass-x', `${x}%`);
+    dock.style.setProperty('--glass-y', `${y}%`);
+  };
+
+  const reset = () => {
+    dock.style.setProperty('--glass-x', '50%');
+    dock.style.setProperty('--glass-y', '50%');
+  };
+
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    dock.addEventListener('pointermove', update, { passive: true });
+    dock.addEventListener('pointerleave', reset, { passive: true });
+  }
+}
+
 const observer = new MutationObserver(() => {
   patchHome();
   updateSyncBadge();
+  bindLiquidDock();
 });
 observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-cloud-sync'] });
 
 window.addEventListener('ontrack:unified-state', patchHome);
-requestAnimationFrame(patchHome);
+requestAnimationFrame(() => {
+  patchHome();
+  bindLiquidDock();
+});
