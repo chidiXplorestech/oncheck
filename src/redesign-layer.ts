@@ -220,72 +220,94 @@ function buildHome() {
 
   return `
     <div class="ot-home" data-ontrack-v3-home>
-      <header class="ot-home-head">
-        <div>
-          <p class="ot-date">${todayLabel()}</p>
-          <h1>${greeting()}, ${esc(name)}.</h1>
-          <p class="ot-context">${goals.length} active priorities · ${focus.items.filter(item => !item.done).length} for today</p>
+      <header class="ot-topbar">
+        <button class="ot-wordmark" type="button" data-nav="overview" aria-label="ONTRACK home">
+          <span class="ot-wordmark-mark">${brandMark()}</span>
+          <span>ONTRACK</span>
+        </button>
+        <div class="ot-topbar-actions">
+          <span class="ot-date">${todayLabel()}</span>
+          <button class="ot-sync" type="button" data-system-settings="1" data-v3-sync><span></span>${syncLabel()}</button>
         </div>
-        <div class="ot-sync" data-v3-sync><span></span>${syncLabel()}</div>
       </header>
 
-      <section class="ot-command">
-        <div class="ot-command-kicker"><span class="ot-pulse"></span> PLAN WITH ONTRACK</div>
-        <form data-v3-plan-form>
-          <textarea data-v3-plan-input rows="2" maxlength="1200" placeholder="Tell ONTRACK what changed or what you want to make happen…"></textarea>
-          <div class="ot-command-actions">
-            <div class="ot-chips" aria-label="Planning shortcuts">
-              <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me.">Fit into my week</button>
-              <button type="button" data-v3-prompt="Reorganise my week around a new deadline.">Add a deadline</button>
-              <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work.">Lighten next week</button>
-            </div>
-            <button class="ot-plan-button" type="submit">Plan it <span>↗</span></button>
-          </div>
-        </form>
-        <div class="ot-plan-status" data-v3-plan-status hidden></div>
-      </section>
+      <main class="ot-home-main">
+        <section class="ot-intro">
+          <div class="ot-intro-mark">${brandMark()}</div>
+          <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
+          <h1>What do you want<br>to make happen?</h1>
+          <p class="ot-intro-copy">Tell ONTRACK what changed, what matters, or what you need to fit into your life.</p>
 
-      <div class="ot-home-grid">
-        <section class="ot-section ot-today">
-          <div class="ot-section-head">
-            <div><span>TODAY</span><h2>What matters now</h2></div>
-            <button type="button" data-system-focus="1">Edit focus</button>
-          </div>
-          <div class="ot-focus-list">${focusRows(focus, goals)}</div>
-          <p class="ot-limit">Keep today to ${maxPriorities} real priorities.</p>
+          <section class="ot-command">
+            <form data-v3-plan-form>
+              <div class="ot-prompt-field">
+                <textarea data-v3-plan-input rows="2" maxlength="1200" placeholder="Build me a plan for…"></textarea>
+                <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
+              </div>
+              <div class="ot-chips" aria-label="Planning shortcuts">
+                <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
+              </div>
+            </form>
+            <div class="ot-plan-status" data-v3-plan-status hidden></div>
+          </section>
         </section>
 
-        <section class="ot-section ot-up-next">
-          <div class="ot-section-head"><div><span>UP NEXT</span><h2>Your next commitments</h2></div><button data-v3-nav-target="calendar" type="button">Week →</button></div>
-          <div class="ot-next-list">
-            ${blocks.length ? blocks.map(block => `
-              <button type="button" class="ot-next-row" data-action="edit-block" data-id="${block.id}">
-                <time><b>${dayName(block.day)}</b><span>${timeLabel(block.start)}</span></time>
-                <span class="ot-next-title">${esc(block.title)}</span>
-                <span class="ot-duration">${block.duration}h</span>
-              </button>`).join('') : '<p class="ot-empty">No upcoming blocks. Your week has room.</p>'}
+        <section class="ot-life">
+          <div class="ot-life-heading">
+            <p>RIGHT NOW</p>
+            <h2>Your life, without the noise.</h2>
+            <span>${goals.length} active priorities · keep today to ${maxPriorities}</span>
           </div>
-        </section>
 
-        <section class="ot-section ot-priorities">
-          <div class="ot-section-head"><div><span>CURRENT FOCUS</span><h2>Active priorities</h2></div><button data-v3-all-plans type="button">All plans →</button></div>
-          <div class="ot-priority-list">
-            ${goals.slice(0, 3).map((goal, index) => `
-              <button class="ot-priority-row" type="button" data-action="select-goal" data-id="${goal.id}">
-                <span class="ot-priority-index">0${index + 1}</span>
-                <span class="ot-priority-copy"><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${esc(goal.cadence)}</small></span>
-                <span class="ot-priority-progress"><i style="--p:${progress(goal)}%"></i><em>${progress(goal)}%</em></span>
-              </button>`).join('') || '<p class="ot-empty">No active priorities yet.</p>'}
+          <div class="ot-life-layout">
+            <section class="ot-plain-section ot-today">
+              <div class="ot-section-head">
+                <div><span>TODAY</span><h3>What matters now</h3></div>
+                <button type="button" data-system-focus="1">Edit</button>
+              </div>
+              <div class="ot-focus-list">${focusRows(focus, goals)}</div>
+            </section>
+
+            <section class="ot-plain-section ot-up-next">
+              <div class="ot-section-head">
+                <div><span>UP NEXT</span><h3>Coming up</h3></div>
+                <button data-v3-nav-target="calendar" type="button">Week ↗</button>
+              </div>
+              <div class="ot-next-list">
+                ${blocks.length ? blocks.map(block => `
+                  <button type="button" class="ot-next-row" data-action="edit-block" data-id="${block.id}">
+                    <time><b>${dayName(block.day)}</b><span>${timeLabel(block.start)}</span></time>
+                    <span class="ot-next-title">${esc(block.title)}</span>
+                    <span class="ot-duration">${block.duration}h</span>
+                  </button>`).join('') : '<p class="ot-empty">Nothing else is pulling at your week.</p>'}
+              </div>
+            </section>
+
+            <section class="ot-plain-section ot-priorities">
+              <div class="ot-section-head">
+                <div><span>PLANS</span><h3>Keep these moving</h3></div>
+                <button data-v3-all-plans type="button">All plans ↗</button>
+              </div>
+              <div class="ot-priority-list">
+                ${goals.slice(0, 3).map((goal, index) => `
+                  <button class="ot-priority-row" type="button" data-action="select-goal" data-id="${goal.id}">
+                    <span class="ot-priority-index">0${index + 1}</span>
+                    <span class="ot-priority-copy"><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${esc(goal.cadence)}</small></span>
+                    <span class="ot-priority-progress"><i style="--p:${progress(goal)}%"></i><em>${progress(goal)}%</em></span>
+                  </button>`).join('') || '<p class="ot-empty">No active plans. You have room to choose what is next.</p>'}
+              </div>
+            </section>
           </div>
         </section>
-      </div>
+      </main>
     </div>`;
 }
-
 function refreshHomeIdentity() {
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
   const name = (account.name || '').trim() || 'there';
-  const heading = document.querySelector<HTMLElement>('.ot-home-head h1');
+  const heading = document.querySelector<HTMLElement>('.ot-eyebrow');
   const next = `${greeting()}, ${name}.`;
   if (heading && heading.textContent !== next) heading.textContent = next;
 }
