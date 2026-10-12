@@ -5,7 +5,12 @@ const onePixelPng = Buffer.from(
   'base64',
 );
 
-test('desktop keeps the original ONTRACK composition', async ({ page }) => {
+async function openGoal(page: import('@playwright/test').Page, id: string) {
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator(`.ot-plans-dialog [data-action="edit-goal"][data-id="${id}"]`).click();
+}
+
+test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
 
@@ -13,37 +18,35 @@ test('desktop keeps the original ONTRACK composition', async ({ page }) => {
   const sidebarBox = await sidebar.boundingBox();
   expect(sidebarBox).not.toBeNull();
   expect(sidebarBox!.x).toBe(0);
-  expect(sidebarBox!.width).toBeGreaterThanOrEqual(210);
-  expect(sidebarBox!.width).toBeLessThanOrEqual(230);
+  expect(sidebarBox!.width).toBeGreaterThanOrEqual(220);
+  expect(sidebarBox!.width).toBeLessThanOrEqual(245);
   await expect(sidebar).not.toHaveCSS('position', 'fixed');
 
-  const heroBox = await page.locator('.hero').boundingBox();
-  expect(heroBox).not.toBeNull();
-  expect(heroBox!.height).toBeGreaterThanOrEqual(245);
-  expect(heroBox!.height).toBeLessThanOrEqual(255);
-
-  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(4);
-  await expect(page.locator('.oncheck-system-nav')).toBeHidden();
+  await expect(page.locator('.ot-home')).toBeVisible();
+  await expect(page.locator('.ot-command')).toBeVisible();
+  await expect(page.locator('.hero')).toHaveCount(0);
+  await expect(page.locator('.ot-home-head h1')).toBeVisible();
+  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(5);
 });
 
 test('Save Changes persists a goal through navigation and reload', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"][data-id="academics"]').click();
+  await openGoal(page, 'academics');
   await page.locator('#goalForm input[name="title"]').fill('Academics — saved test');
   await page.locator('#goalForm textarea[name="notes"]').fill('This note must persist after a reload.');
   await page.locator('#goalForm button[type="submit"]').click();
 
   await expect(page.locator('.preview-card h2')).toHaveText('Academics — saved test');
   await page.locator('[data-nav="overview"]').first().click();
-  await expect(page.locator('.goal-row').filter({ hasText: 'Academics — saved test' })).toHaveCount(1);
+  await expect(page.locator('.ot-priority-row').filter({ hasText: 'Academics — saved test' })).toHaveCount(1);
 
   await page.reload();
-  await expect(page.locator('.goal-row').filter({ hasText: 'Academics — saved test' })).toHaveCount(1);
+  await expect(page.locator('.ot-priority-row').filter({ hasText: 'Academics — saved test' })).toHaveCount(1);
 });
 
 test('unsaved goal fields survive checklist actions', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"][data-id="academics"]').click();
+  await openGoal(page, 'academics');
   await page.locator('#goalForm input[name="title"]').fill('Academics — keep this edit');
   await page.locator('[data-action="add-task"][data-id="academics"]').click();
 
@@ -63,21 +66,28 @@ test('Account Settings saves and updates the existing profile and greeting', asy
 
   await expect(page.locator('.profile strong')).toHaveText('Chidi');
   await expect(page.locator('.profile span')).toHaveText('ONTRACK');
-  await expect(page.locator('.hero-copy h1')).toContainText('Chidi');
+  await expect(page.locator('.ot-home-head h1')).toContainText('Chidi');
 
   await page.reload();
   await expect(page.locator('.profile strong')).toHaveText('Chidi');
 });
 
-test('Today Focus is functional without adding a new dashboard card', async ({ page }) => {
+test('Today Focus remains functional from the new Today surface', async ({ page }) => {
   await page.goto('/');
-  await page.locator('.focus-card').click();
+  await page.locator('[data-system-focus]').click();
   await expect(page.locator('.focus-dialog')).toBeVisible();
   await page.locator('[data-focus-new]').fill('Finish the next concrete task');
   await page.locator('[data-focus-add]').click();
   await expect(page.locator('.focus-row')).toHaveCount(1);
   await page.locator('.focus-check').click();
   await expect(page.locator('.focus-row')).toHaveClass(/done/);
+});
+
+test('AI planning composer is visible without masquerading as a chatbot', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-v3-plan-input]')).toBeVisible();
+  await page.locator('[data-v3-prompt]').first().click();
+  await expect(page.locator('[data-v3-plan-input]')).not.toHaveValue('');
 });
 
 test('320px portrait has no page-level horizontal overflow and Settings remains reachable', async ({ page }) => {
@@ -91,10 +101,10 @@ test('320px portrait has no page-level horizontal overflow and Settings remains 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 
   await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(5);
-  const goalBox = await page.locator('.goal-row').first().boundingBox();
-  expect(goalBox).not.toBeNull();
-  expect(goalBox!.x).toBeGreaterThanOrEqual(0);
-  expect(goalBox!.x + goalBox!.width).toBeLessThanOrEqual(320);
+  const commandBox = await page.locator('.ot-command').boundingBox();
+  expect(commandBox).not.toBeNull();
+  expect(commandBox!.x).toBeGreaterThanOrEqual(0);
+  expect(commandBox!.x + commandBox!.width).toBeLessThanOrEqual(320);
 
   await page.locator('.oncheck-system-nav').click();
   const dialogBox = await page.locator('.system-dialog').boundingBox();
@@ -109,7 +119,7 @@ test('phone landscape uses the compact side dock and does not overflow the page'
   const sidebarBox = await page.locator('.sidebar').boundingBox();
   expect(sidebarBox).not.toBeNull();
   expect(sidebarBox!.x).toBeLessThanOrEqual(10);
-  expect(sidebarBox!.width).toBeLessThanOrEqual(66);
+  expect(sidebarBox!.width).toBeLessThanOrEqual(82);
   expect(sidebarBox!.height).toBeGreaterThan(350);
 
   const dimensions = await page.evaluate(() => ({
@@ -138,7 +148,7 @@ test('Media accepts multiple uploads in one action and renders them from Indexed
 test('Training remains interactive and contained at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/');
-  await page.locator('[data-action="edit-goal"][data-id="training"]').click();
+  await openGoal(page, 'training');
   await expect(page.locator('.training-space')).toBeVisible();
 
   const dimensions = await page.evaluate(() => ({
