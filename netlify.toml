@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Secure AI planner endpoint. Netlify Functions handle the OpenAI secret server-side.
+[[redirects]]
+  from = "/api/ontrack-plan"
+  to = "/.netlify/functions/ontrack-plan"
+  status = 200
+
 # ONTRACK is a client-side app. Any direct route should fall back to index.html.
 [[redirects]]
   from = "/*"
