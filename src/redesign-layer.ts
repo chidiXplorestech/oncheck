@@ -157,15 +157,17 @@ function patchNavigation() {
   };
   document.querySelectorAll<HTMLElement>('.nav-btn[data-nav]').forEach(button => {
     const key = button.dataset.nav ?? '';
-    if (!labels[key]) return;
+    if (!labels[key] || button.dataset.v3Nav === '1') return;
     const icon = button.querySelector('span')?.outerHTML ?? '';
     button.innerHTML = `${icon}<span class="ot-nav-label">${labels[key]}</span>`;
+    button.dataset.v3Nav = '1';
   });
 
   const settings = document.querySelector<HTMLElement>('.oncheck-system-nav');
-  if (settings && !settings.querySelector('.ot-nav-label')) {
+  if (settings && settings.dataset.v3Nav !== '1') {
     const icon = settings.querySelector('span')?.outerHTML ?? '<span>⌁</span>';
     settings.innerHTML = `${icon}<span class="ot-nav-label">Settings</span>`;
+    settings.dataset.v3Nav = '1';
   }
 
   const quote = document.querySelector<HTMLElement>('.side-quote');
@@ -278,7 +280,10 @@ function patchHome() {
 function updateSyncBadge() {
   const badge = document.querySelector<HTMLElement>('[data-v3-sync]');
   if (!badge) return;
-  badge.innerHTML = `<span></span>${syncLabel()}`;
+  const label = syncLabel();
+  if (badge.dataset.syncState === label) return;
+  badge.dataset.syncState = label;
+  badge.innerHTML = `<span></span>${label}`;
 }
 
 function toggleFocus(id: string) {
