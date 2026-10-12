@@ -65,6 +65,19 @@ function writeJson(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function readCoreState(): CoreState {
+  const stored = localStorage.getItem(CORE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored) as CoreState;
+    } catch {
+      // Fall through to the live runtime state.
+    }
+  }
+  const runtime = (window as unknown as { __ONTRACK_CORE_STATE__?: CoreState }).__ONTRACK_CORE_STATE__;
+  return runtime ? structuredClone(runtime) : { goals: [], blocks: [], media: [] };
+}
+
 function esc(value: string) {
   return value.replace(/[&<>'"]/g, character => ({
     '&': '&amp;',
@@ -197,7 +210,7 @@ function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
 }
 
 function buildHome() {
-  const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+  const state = readCoreState();
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
   const focus = readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] });
   const goals = activeGoals(state);
@@ -243,7 +256,7 @@ function buildHome() {
         </section>
 
         <section class="ot-section ot-up-next">
-          <div class="ot-section-head"><div><span>UP NEXT</span><h2>Your next commitments</h2></div><button data-nav="calendar" type="button">Week →</button></div>
+          <div class="ot-section-head"><div><span>UP NEXT</span><h2>Your next commitments</h2></div><button data-v3-nav-target="calendar" type="button">Week →</button></div>
           <div class="ot-next-list">
             ${blocks.length ? blocks.map(block => `
               <button type="button" class="ot-next-row" data-action="edit-block" data-id="${block.id}">
@@ -269,10 +282,21 @@ function buildHome() {
     </div>`;
 }
 
+function refreshHomeIdentity() {
+  const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
+  const name = (account.name || '').trim() || 'there';
+  const heading = document.querySelector<HTMLElement>('.ot-home-head h1');
+  if (heading) heading.textContent = `${greeting()}, ${name}.`;
+}
+
 function patchHome() {
   patchNavigation();
   const workspace = document.querySelector<HTMLElement>('.workspace');
-  if (!workspace || workspace.querySelector('[data-ontrack-v3-home]')) return;
+  if (!workspace) return;
+  if (workspace.querySelector('[data-ontrack-v3-home]')) {
+    refreshHomeIdentity();
+    return;
+  }
   if (!workspace.querySelector('.hero') || !workspace.querySelector('.overview-grid')) return;
   workspace.innerHTML = buildHome();
 }
@@ -329,7 +353,7 @@ function suggestedSlots(plan: AiPlan, state: CoreState) {
 }
 
 function planContext() {
-  const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+  const state = readCoreState();
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
   return {
     active_goals: activeGoals(state).slice(0, 8).map(goal => ({
@@ -380,7 +404,7 @@ async function requestPlan(intent: string) {
 
 function openPlans() {
   document.querySelector<HTMLDialogElement>('.ot-plans-dialog')?.close();
-  const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+  const state = readCoreState();
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plans-dialog';
   dialog.innerHTML = `
@@ -400,8 +424,9 @@ function openPlans() {
     </div>`;
   document.body.append(dialog);
   dialog.querySelector('[data-v3-plans-close]')?.addEventListener('click', () => dialog.close());
-  dialog.querySelectorAll('[data-action="edit-goal"]').forEach(button => {
-    button.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', event => {
+    const button = (event.target as HTMLElement).closest('[data-action="edit-goal"]');
+    if (button) queueMicrotask(() => dialog.close());
   });
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
   dialog.showModal();
@@ -409,7 +434,7 @@ function openPlans() {
 
 function previewPlan(plan: AiPlan, sourceText: string) {
   document.querySelector<HTMLDialogElement>('.ot-plan-dialog')?.close();
-  const state = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+  const state = readCoreState();
   const slots = suggestedSlots(plan, state);
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plan-dialog';
@@ -440,7 +465,7 @@ function previewPlan(plan: AiPlan, sourceText: string) {
   const close = () => dialog.close();
   dialog.querySelectorAll('[data-v3-close]').forEach(button => button.addEventListener('click', close));
   dialog.querySelector('[data-v3-apply]')?.addEventListener('click', () => {
-    const current = readJson<CoreState>(CORE_KEY, { goals: [], blocks: [], media: [] });
+    const current = readCoreState();
     const goalId = `ai-${uid()}`;
     current.goals.unshift({
       id: goalId,
@@ -504,11 +529,16 @@ async function submitPlan(form: HTMLFormElement) {
 }
 
 document.addEventListener('click', event => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans],[data-v3-nav-target]');
   if (!target) return;
 
   if (target.hasAttribute('data-v3-all-plans')) {
     openPlans();
+    return;
+  }
+
+  if (target.dataset.v3NavTarget) {
+    document.querySelector<HTMLElement>(`.sidebar [data-nav="${CSS.escape(target.dataset.v3NavTarget)}"]`)?.click();
     return;
   }
 
