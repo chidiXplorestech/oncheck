@@ -103,6 +103,7 @@ const seeded: AppState = {
 };
 
 let state: AppState = load();
+(window as unknown as { __ONTRACK_CORE_STATE__?: AppState }).__ONTRACK_CORE_STATE__ = state;
 let view: 'overview' | 'goals' | 'calendar' | 'media' = 'overview';
 let selectedGoalId = state.goals[0]?.id ?? '';
 let filter: 'all' | GoalStatus = 'all';
