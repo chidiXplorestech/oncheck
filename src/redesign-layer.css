@@ -67,6 +67,7 @@ button,input,textarea,select{font:inherit}
 .nav-btn.active:before{display:none!important}
 .nav-btn>span:first-child{font-size:12px!important;color:inherit!important}
 .nav-btn.active>span:first-child{color:#111!important}
+.oncheck-system-nav{display:none!important}
 .ot-nav-label{display:inline!important}
 
 /* Home */
@@ -491,6 +492,7 @@ input:focus,select:focus,textarea:focus{border-color:#888!important;box-shadow:0
 .focus-row.done .focus-check{background:#111!important;border-color:#111!important;color:#fff!important}
 
 @media(max-width:900px){
+  .oncheck-system-nav{display:flex!important}
   html{scroll-padding-bottom:104px}
   .workspace{padding-bottom:104px!important}
   .page-wrap,.calendar-page{padding-bottom:124px!important}
