@@ -221,7 +221,7 @@ function buildHome() {
   return `
     <div class="ot-home" data-ontrack-v3-home>
       <header class="ot-topbar">
-        <button class="ot-wordmark" type="button" data-nav="overview" aria-label="ONTRACK home">
+        <button class="ot-wordmark" type="button" data-v3-nav-target="overview" aria-label="ONTRACK home">
           <span class="ot-wordmark-mark">${brandMark()}</span>
           <span>ONTRACK</span>
         </button>
