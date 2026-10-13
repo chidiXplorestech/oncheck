@@ -17,6 +17,7 @@ This is a source and build audit. The live browser timed out twice before return
 | Medium | All plans has no creation action, leaving empty accounts with no manual entry point from that sheet. | Add Create a plan, using the existing goal creation flow. |
 | Medium | `npm ci` fails because the dependency lockfile omits the existing Supabase dependency. | Repair the lockfile and use reproducible installation in CI. |
 | Medium | Planner requests can wait indefinitely and the preview mislabels a full calendar as no requested time. | Bound the network request to 45 seconds with retry copy; explain missing slots and partial scheduling. |
+| Build dependency | npm audit flagged a high-severity denial-of-service advisory in source-map-js. | Update the transitive build dependency to the patched version. |
 
 ## Open findings
 
@@ -32,7 +33,7 @@ This is a source and build audit. The live browser timed out twice before return
 - Production TypeScript/Vite build passed.
 - Three state regression tests passed: stale-day focus, current local-day focus and truthful sync labels.
 - Clean dependency installation passed after lockfile repair.
-- Added browser regressions for focus editing/draft preservation and first-plan creation. These were not run locally because the browser inspection environment timed out. CI runs the browser suite on the pull request.
+- Added browser regressions for focus editing/draft preservation and first-plan creation. The first CI run passed 34/35 browser tests; the remaining failure was an ambiguous selector in the new first-plan test, corrected before rerunning CI. Local live-browser inspection remains unavailable.
 - Sign-in, cross-device sync, real AI responses, uploaded media and the live deployment remain unverified.
 
 The patch addresses the listed source defects. It is not a claim that the entire app or its production services passed a visual or end-to-end audit.

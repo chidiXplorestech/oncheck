@@ -24,6 +24,7 @@ test('All plans lets an empty account create its first plan', async ({ page }) =
   await expect(page.locator('dialog.modal')).toBeVisible();
   await page.getByLabel('Goal title').fill('First plan');
   await page.getByRole('button', { name: 'Save Goal', exact: true }).click();
-  await page.locator('[data-nav="overview"]').click();
+  await expect(page.locator('dialog.modal')).toHaveCount(0);
+  await page.locator('.sidebar [data-nav="overview"]').click();
   await expect(page.locator('.ot-priority-row')).toContainText('First plan');
 });
