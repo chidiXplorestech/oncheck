@@ -82,6 +82,14 @@ for (const viewport of [
     await imageInsideFrame(options.first().locator('img'), options.first(), viewport.width);
     const pickerImage = await options.first().locator('img').boundingBox();
     expect(pickerImage!.height).toBeLessThanOrEqual(Math.min(180, viewport.height * .35) + 1);
+    const name = await options.first().locator('span').boundingBox();
+    expect(name!.y).toBeGreaterThanOrEqual(0);
+    expect(name!.y + name!.height).toBeLessThanOrEqual(viewport.height);
+    if (viewport.width === 844) {
+      const close = await page.locator('.mobile-media-close').boundingBox();
+      expect(close!.y).toBeGreaterThanOrEqual(pickerBox!.y);
+      expect(close!.y + close!.height).toBeLessThanOrEqual(viewport.height);
+    }
     await page.screenshot({ path: testInfo.outputPath(`picker-${viewport.width}.png`) });
     const coverReload = viewport.width <= 900 ? page.waitForEvent('load') : Promise.resolve();
     await options.first().click();

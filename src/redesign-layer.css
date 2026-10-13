@@ -306,3 +306,10 @@ html,body{background:#171817!important}
 .training-visual-copy small{max-width:100%;font-size:clamp(10px,1.7cqi,12px);line-height:1.4}
 .preview-cover,.training-visual-banner,.media-grid>.media-item{scroll-margin-block:18px}
 @media(max-width:900px){.preview-cover{aspect-ratio:1}.media-grid{gap:12px}.media-strip>.media-thumb{flex-basis:58px;inline-size:58px;block-size:58px}.preview-cover,.training-visual-banner,.media-grid>.media-item{scroll-margin-block-end:calc(112px + env(safe-area-inset-bottom))}}
+@media(max-height:480px) and (min-width:600px){
+  .mobile-media-panel{display:grid;grid-template-columns:minmax(240px,.9fr) minmax(0,1.3fr);gap:16px 24px;align-items:start}
+  .mobile-media-head{grid-column:1;grid-row:1}.mobile-media-head h2{font-size:24px;line-height:1.1}
+  .mobile-media-actions{grid-column:1;grid-row:2;margin:0}
+  .mobile-media-existing{grid-column:2;grid-row:1 / span 2;min-width:0;max-height:calc(82dvh - 36px);overflow-y:auto}
+  .mobile-media-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,120px),1fr))}
+}
