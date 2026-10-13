@@ -86,6 +86,7 @@ test('Today Focus remains functional from the new Today surface', async ({ page 
 test('AI planning composer is visible without masquerading as a chatbot', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-v3-plan-input]')).toBeVisible();
+  await page.locator('.ot-shortcuts summary').click();
   await page.locator('[data-v3-prompt]').first().click();
   await expect(page.locator('[data-v3-plan-input]')).not.toHaveValue('');
 });

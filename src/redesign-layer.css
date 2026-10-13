@@ -571,6 +571,9 @@ input:focus,select:focus,textarea:focus{border-color:#888!important;box-shadow:0
 
 /* Functional UI: quiet surfaces, cobalt accents and consistent reading scale. */
 :root{--ot-bg:#f8f9fb;--ot-surface:#fff;--ot-ink:#18202b;--ot-muted:#586474;--ot-line:#dce1e8;--ot-cobalt:#2957b2;--ot-lime:#2957b2}
+html[data-brand="ontrack"]{--bg:var(--ot-bg);--panel:#fff;--panel2:#f1f4f8;--line:var(--ot-line);--text:var(--ot-ink);--muted:var(--ot-muted);--blue:var(--ot-cobalt);--green:var(--ot-cobalt);color-scheme:light}
+html[data-brand="ontrack"] body,html[data-brand="ontrack"] #app,html[data-brand="ontrack"] .workspace{background:var(--ot-bg)!important;color:var(--ot-ink)!important}
+.shell{height:auto!important;overflow:visible!important}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.012em}
 .ot-home-main{max-width:1040px;padding:0 32px 48px;display:flex;flex-direction:column;gap:32px}
 .ot-topbar{max-width:1040px;height:80px;padding:0 32px}
@@ -625,11 +628,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-s
 .ot-chips button{min-height:52px;padding:12px;font-size:13px;border-radius:14px;background:#edf1f7;color:var(--ot-ink);border-color:transparent}
 .ot-plan-status{font-size:14px;color:var(--ot-muted);line-height:1.5}
 .sidebar{height:62px!important;padding:6px!important;bottom:max(16px,env(safe-area-inset-bottom))!important;background:#fffffff2!important;border-color:#dce1e8!important;box-shadow:0 8px 30px #18202b15!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+html[data-brand="ontrack"] .sidebar{background:#fffffff2!important;border-color:var(--ot-line)!important}
 .sidebar::before,.sidebar::after{display:none!important}
 html[data-brand="ontrack"] .nav-btn{height:48px!important;min-height:48px!important;min-width:64px!important;font-size:13px!important;color:var(--ot-muted)!important;gap:7px!important;padding:0 16px!important}
 html[data-brand="ontrack"] .nav-btn.active{background:#edf2fc!important;color:var(--ot-cobalt)!important;box-shadow:none!important}
 html[data-brand="ontrack"] .nav-btn:hover{background:#f0f3f8!important;color:var(--ot-cobalt)!important}
 html[data-brand="ontrack"] .nav-btn.active>span:first-child{color:var(--ot-cobalt)!important}
+html[data-brand="ontrack"] .nav-btn.active span{color:var(--ot-cobalt)!important}
 .ot-nav-label{font-size:12px!important}
 html[data-brand="ontrack"] .primary,html[data-brand="ontrack"] .system-button.primary,.ot-apply{background:var(--ot-cobalt)!important;color:#fff!important;border-color:var(--ot-cobalt)!important;min-height:48px;font-size:14px;border-radius:14px}
 html[data-brand="ontrack"] .primary:hover,html[data-brand="ontrack"] .system-button.primary:hover,.ot-apply:hover{background:#234b9a!important}
@@ -692,6 +697,8 @@ html[data-brand="ontrack"] .auth-root,html[data-brand="ontrack"] .auth-stage{bac
 .auth-atmosphere{display:none}
 html[data-brand="ontrack"] .auth-card{background:#fff!important;border-color:var(--ot-line)!important;border-radius:24px;box-shadow:0 16px 60px #18202b0c}
 .auth-brand{color:var(--ot-cobalt);letter-spacing:.08em;font:600 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html[data-brand="ontrack"] .auth-brand{color:var(--ot-ink)!important}
+.auth-brand .ontrack-brand-mark{filter:brightness(0)}
 .auth-heading h1{color:var(--ot-ink);font-size:34px;line-height:1.15;font-weight:600}
 .auth-heading span,.auth-heading p{color:var(--ot-muted)}
 .auth-form label{color:var(--ot-muted);font-size:13px;font-weight:500;letter-spacing:0;text-transform:none}
@@ -701,4 +708,6 @@ html[data-brand="ontrack"] .auth-link{color:var(--ot-cobalt)!important;min-heigh
 .auth-feedback{background:#edf2fc;color:#254878;border-color:#d5dfef;font-size:14px}
 button:focus-visible,summary:focus-visible{outline:3px solid var(--ot-cobalt)!important;outline-offset:3px}
 .ot-plan-row[data-action="new-goal"]{display:flex;min-height:52px;border-radius:14px;background:#edf2fc;color:var(--ot-cobalt);padding:12px 16px;font-size:15px;margin-bottom:16px}
+.modal{background:#fff;color:var(--ot-ink);border-color:var(--ot-line);border-radius:22px}
+.modal label,.editor-card label{font-size:13px;color:var(--ot-muted)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
