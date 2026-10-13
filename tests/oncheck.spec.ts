@@ -26,7 +26,7 @@ test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) =>
   await expect(page.locator('.ot-home')).toBeVisible();
   await expect(page.locator('.ot-command')).toBeVisible();
   await expect(page.locator('.hero')).toHaveCount(0);
-  await expect(page.locator('.ot-intro h1')).toContainText('What do you want');
+  await expect(page.locator('.ot-life-heading h1')).toHaveText('Your day, in focus.');
   await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(4);
   await expect(page.locator('.oncheck-system-nav')).toBeHidden();
 });

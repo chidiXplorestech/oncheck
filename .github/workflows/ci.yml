@@ -38,6 +38,15 @@ jobs:
       - name: Browser regression tests
         run: npm run test:e2e
 
+      - name: Upload UI review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ontrack-ui-review
+          path: test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Single-file offline build
         run: npm run build:offline
 

@@ -223,38 +223,17 @@ function buildHome() {
         </button>
         <div class="ot-topbar-actions">
           <span class="ot-date">${todayLabel()}</span>
+          <button class="ot-tour-button" type="button" data-v3-tour>Quick tour</button>
           <button class="ot-sync" type="button" data-system-settings="1" data-v3-sync><span></span>${syncLabel()}</button>
         </div>
       </header>
 
       <main class="ot-home-main">
-        <section class="ot-intro">
-          <div class="ot-intro-mark">${brandMark()}</div>
-          <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
-          <h1>What do you want<br>to make happen?</h1>
-          <p class="ot-intro-copy">Tell ONTRACK what changed, what matters, or what you need to fit into your life.</p>
-
-          <section class="ot-command">
-            <form data-v3-plan-form>
-              <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="Build me a plan for…"></textarea>
-                <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
-              </div>
-              <div class="ot-chips" aria-label="Planning shortcuts">
-                <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
-                <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
-                <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
-              </div>
-            </form>
-            <div class="ot-plan-status" data-v3-plan-status role="status" aria-live="polite" hidden></div>
-          </section>
-        </section>
-
         <section class="ot-life">
           <div class="ot-life-heading">
-            <p>RIGHT NOW</p>
-            <h2>Your life, without the noise.</h2>
-            <span>${goals.length} active priorities · keep today to ${maxPriorities}</span>
+            <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
+            <h1>Your day, in focus.</h1>
+            <span>${goals.length} active plans · keep today to ${maxPriorities}</span>
           </div>
 
           <div class="ot-life-layout">
@@ -292,11 +271,31 @@ function buildHome() {
                     <span class="ot-priority-index">0${index + 1}</span>
                     <span class="ot-priority-copy"><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${esc(goal.cadence)}</small></span>
                     <span class="ot-priority-progress"><i style="--p:${progress(goal)}%"></i><em>${progress(goal)}%</em></span>
-                  </button>`).join('') || '<p class="ot-empty">No active plans. You have room to choose what is next.</p>'}
+                  </button>`).join('') || '<div class="ot-empty-state"><p>No plans yet.</p><span>Choose one thing you want to work towards.</span><button type="button" class="ot-apply" data-action="new-goal">Create your first plan</button></div>'}
               </div>
             </section>
           </div>
         </section>
+        <section class="ot-intro">
+          <h2>Make a plan</h2>
+          <p class="ot-intro-copy">Describe a goal or a change to your week. Review the plan before applying it.</p>
+
+          <section class="ot-command">
+            <form data-v3-plan-form>
+              <div class="ot-prompt-field">
+                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="Build me a plan for…"></textarea>
+                <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
+              </div>
+              <details class="ot-shortcuts"><summary>Planning shortcuts</summary><div class="ot-chips" aria-label="Planning shortcuts">
+                <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
+              </div></details>
+            </form>
+            <div class="ot-plan-status" data-v3-plan-status role="status" aria-live="polite" hidden></div>
+          </section>
+        </section>
+
       </main>
     </div>`;
 }
@@ -538,6 +537,39 @@ function previewPlan(plan: AiPlan, sourceText: string) {
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
 }
 
+function openTour() {
+  document.querySelector<HTMLDialogElement>('.ot-tour-dialog')?.close();
+  const steps = [
+    { title: 'Choose what matters today', copy: 'Keep a short focus list. Tick off an action when it is finished.', demo: '<span class="ot-demo-label">TODAY</span><p>○ Review lecture notes</p><p>✓ Finish one coding exercise</p>' },
+    { title: 'Give your goals space', copy: 'Use Plans for your next actions and Week to choose when to work on them.', demo: '<span class="ot-demo-label">YOUR WEEK</span><p>Tuesday · 10:00</p><strong>Study block · 45 minutes</strong>' },
+    { title: 'Make changes at your pace', copy: 'Describe a new goal in the planner. Check its actions and suggested times before applying it.', demo: '<span class="ot-demo-label">PLAN PREVIEW</span><p>Prepare for my next deadline</p><strong>Review actions → Apply when ready</strong>' },
+  ];
+  const dialog = document.createElement('dialog');
+  dialog.className = 'ot-plan-dialog ot-tour-dialog';
+  dialog.setAttribute('aria-label', 'How ONTRACK works');
+  let step = 0;
+  const render = () => {
+    const current = steps[step];
+    dialog.innerHTML = `<div class="ot-plan-panel ot-tour-panel">
+      <header><div><span>QUICK TOUR · ${step + 1} OF ${steps.length}</span><h2>${current.title}</h2><p>${current.copy}</p></div><button type="button" data-tour-skip aria-label="Close tour">×</button></header>
+      <div class="ot-tour-demo" aria-label="Illustrative example">${current.demo}</div>
+      <p class="ot-tour-note">Example shown for illustration.</p>
+      <footer><button type="button" class="ot-secondary" data-tour-skip>Skip tour</button><button type="button" class="ot-apply" data-tour-next>${step === steps.length - 1 ? 'Start my day' : 'Continue'}</button></footer>
+    </div>`;
+    dialog.querySelectorAll('[data-tour-skip]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('[data-tour-next]')?.addEventListener('click', () => {
+      if (step === steps.length - 1) { dialog.close(); return; }
+      step += 1;
+      render();
+      dialog.querySelector<HTMLButtonElement>('[data-tour-next]')?.focus();
+    });
+  };
+  render();
+  document.body.append(dialog);
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.showModal();
+}
+
 function openPlanningStage() {
   document.querySelector('.ot-thinking-stage')?.remove();
   const stage = document.createElement('div');
@@ -597,8 +629,13 @@ async function submitPlan(form: HTMLFormElement) {
 }
 
 document.addEventListener('click', event => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans],[data-v3-nav-target]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans],[data-v3-nav-target],[data-v3-tour]');
   if (!target) return;
+
+  if (target.hasAttribute('data-v3-tour')) {
+    openTour();
+    return;
+  }
 
   if (target.hasAttribute('data-v3-all-plans')) {
     openPlans();

@@ -569,399 +569,136 @@ input:focus,select:focus,textarea:focus{border-color:#888!important;box-shadow:0
 @keyframes ot-think-pulse{0%,100%{transform:scale(.94);opacity:.72}50%{transform:scale(1);opacity:1}}
 @media(prefers-reduced-motion:reduce){.ot-thinking-mark{animation:none}.ot-thinking-stage{transition:none}}
 
-
-/* =========================================================
-   ONTRACK Liquid Glass — cobalt / ice palette
-   Reference palette sampled from the supplied visual:
-   deep cobalt #2957B2, electric blue #3669C8,
-   mid blue #6694DB, ice #93B2E0 / #B1C7E6.
-   ========================================================= */
-:root{
-  --ot-cobalt-950:#173d8d;
-  --ot-cobalt-900:#214da3;
-  --ot-cobalt-800:#2957b2;
-  --ot-cobalt-700:#3669c8;
-  --ot-cobalt-600:#4878d1;
-  --ot-cobalt-500:#6694db;
-  --ot-ice-400:#93b2e0;
-  --ot-ice-300:#b1c7e6;
-  --ot-ice-200:#d3deea;
-  --ot-ink:#f7fbff;
-  --ot-muted:rgba(240,247,255,.68);
-  --ot-line:rgba(255,255,255,.24);
-  --ot-glass:rgba(230,241,255,.14);
-  --ot-glass-strong:rgba(226,239,255,.24);
-  --ot-glass-edge:rgba(255,255,255,.48);
-  --ot-glass-shadow:rgba(14,42,99,.30);
-  --ot-accent:#dff3ff;
+/* Functional UI: quiet surfaces, cobalt accents and consistent reading scale. */
+:root{--ot-bg:#f8f9fb;--ot-surface:#fff;--ot-ink:#18202b;--ot-muted:#586474;--ot-line:#dce1e8;--ot-cobalt:#2957b2;--ot-lime:#2957b2}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.012em}
+.ot-home-main{max-width:1040px;padding:0 32px 48px;display:flex;flex-direction:column;gap:32px}
+.ot-topbar{max-width:1040px;height:80px;padding:0 32px}
+.ot-wordmark{font-size:12px;letter-spacing:.05em;color:var(--ot-ink)}
+.ot-date{font-size:12px;letter-spacing:0;text-transform:none;color:var(--ot-muted)}
+.ot-sync,.ot-tour-button{min-height:44px;padding:10px 14px;font-size:12px;border:1px solid var(--ot-line);border-radius:999px;background:#fff;color:var(--ot-muted);cursor:pointer}
+.ot-tour-button{border-color:transparent;background:transparent;color:var(--ot-cobalt)}
+.ot-life{padding:28px 0 0;border:0}
+.ot-life-heading{max-width:none;margin:0 0 28px;text-align:left}
+.ot-life-heading .ot-eyebrow{font-size:14px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ot-muted);margin-bottom:10px}
+.ot-life-heading h1{margin:0;font-size:clamp(30px,4vw,42px);font-weight:600;letter-spacing:-.045em;line-height:1.15}
+.ot-life-heading>span{font-size:13px;line-height:1.5;margin-top:10px;color:var(--ot-muted)}
+.ot-life-layout{max-width:none;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px}
+.ot-plain-section{min-width:0;padding:24px;border:1px solid var(--ot-line);border-radius:22px;background:#fff}
+.ot-today{grid-column:1/-1}
+.ot-section-head{gap:12px;align-items:center;margin-bottom:12px}
+.ot-section-head span{font-size:11px;color:var(--ot-muted);letter-spacing:.06em}
+.ot-section-head h3{font-size:20px;font-weight:600}
+.ot-section-head button{min-height:44px;padding:8px 10px;font-size:13px;color:var(--ot-cobalt);border-radius:12px}
+.ot-section-head button:hover{background:#edf2fc;color:#234b9a}
+.ot-focus-row,.ot-next-row,.ot-priority-row{min-height:64px;border-bottom-color:var(--ot-line);border-radius:8px}
+.ot-focus-row:last-child,.ot-next-row:last-child,.ot-priority-row:last-child{border-bottom:0}
+.ot-focus-row:hover,.ot-next-row:hover,.ot-priority-row:hover{background:#f8f9fb}
+.ot-focus-row>span:last-child,.ot-next-title,.ot-priority-copy b{font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.ot-focus-row small,.ot-priority-copy small,.ot-next-row time span,.ot-duration,.ot-priority-progress em{font-size:12px;color:var(--ot-muted);line-height:1.45}
+.ot-focus-row.done{opacity:1;color:var(--ot-muted)}
+.ot-focus-row.done .ot-check{background:var(--ot-cobalt);border-color:var(--ot-cobalt)}
+.ot-next-row{grid-template-columns:76px minmax(0,1fr) auto;gap:10px}
+.ot-next-row time b{font-size:13px;color:var(--ot-ink)}
+.ot-priority-row{grid-template-columns:25px minmax(0,1fr) 58px;gap:8px}
+.ot-priority-index{font-size:12px;color:var(--ot-muted)}
+.ot-priority-progress{grid-template-columns:1fr;gap:5px}
+.ot-priority-progress i{height:4px;border-radius:999px;background:linear-gradient(90deg,var(--ot-cobalt) var(--p),#e4e9f1 var(--p))}
+.ot-empty{font-size:14px;color:var(--ot-muted);line-height:1.5;margin:16px 0}
+.ot-empty-state{padding:16px 0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.ot-empty-state p{font-size:17px;color:var(--ot-ink);margin:0;font-weight:600}
+.ot-empty-state>span{font-size:14px;color:var(--ot-muted);line-height:1.5}
+.ot-empty-state button{margin-top:8px}
+.ot-intro{min-height:0;padding:28px 0 0;border-top:1px solid var(--ot-line);align-items:flex-start;justify-content:flex-start;text-align:left}
+.ot-intro h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.03em}
+.ot-intro-copy{max-width:640px;margin:8px 0 0;font-size:14px;color:var(--ot-muted);line-height:1.55}
+.ot-command{width:100%;margin-top:18px}
+.ot-prompt-field{border-radius:18px;border-color:var(--ot-line);box-shadow:none;align-items:center}
+.ot-command textarea{font-size:16px!important;color:var(--ot-ink)!important;min-height:52px!important}
+.ot-command textarea::placeholder{color:var(--ot-muted)}
+.ot-plan-button{background:var(--ot-cobalt);min-width:46px;min-height:46px;color:white}
+.ot-shortcuts{margin-top:12px}
+.ot-shortcuts summary{display:flex;align-items:center;min-height:44px;font-size:13px;color:var(--ot-muted);cursor:pointer;gap:8px;list-style:none}
+.ot-shortcuts summary::before{content:'+';font-size:20px;color:var(--ot-cobalt)}
+.ot-shortcuts[open] summary::before{content:'−'}
+.ot-chips{margin:0;gap:8px}
+.ot-chips button{min-height:52px;padding:12px;font-size:13px;border-radius:14px;background:#edf1f7;color:var(--ot-ink);border-color:transparent}
+.ot-plan-status{font-size:14px;color:var(--ot-muted);line-height:1.5}
+.sidebar{height:62px!important;padding:6px!important;bottom:max(16px,env(safe-area-inset-bottom))!important;background:#fffffff2!important;border-color:#dce1e8!important;box-shadow:0 8px 30px #18202b15!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.sidebar::before,.sidebar::after{display:none!important}
+html[data-brand="ontrack"] .nav-btn{height:48px!important;min-height:48px!important;min-width:64px!important;font-size:13px!important;color:var(--ot-muted)!important;gap:7px!important;padding:0 16px!important}
+html[data-brand="ontrack"] .nav-btn.active{background:#edf2fc!important;color:var(--ot-cobalt)!important;box-shadow:none!important}
+html[data-brand="ontrack"] .nav-btn:hover{background:#f0f3f8!important;color:var(--ot-cobalt)!important}
+html[data-brand="ontrack"] .nav-btn.active>span:first-child{color:var(--ot-cobalt)!important}
+.ot-nav-label{font-size:12px!important}
+html[data-brand="ontrack"] .primary,html[data-brand="ontrack"] .system-button.primary,.ot-apply{background:var(--ot-cobalt)!important;color:#fff!important;border-color:var(--ot-cobalt)!important;min-height:48px;font-size:14px;border-radius:14px}
+html[data-brand="ontrack"] .primary:hover,html[data-brand="ontrack"] .system-button.primary:hover,.ot-apply:hover{background:#234b9a!important}
+html[data-brand="ontrack"] .secondary,html[data-brand="ontrack"] .system-button{background:#edf1f7!important;color:var(--ot-ink)!important;border-color:var(--ot-line)!important;min-height:44px}
+html[data-brand="ontrack"] .editor-card,html[data-brand="ontrack"] .preview-card,html[data-brand="ontrack"] .side-card,html[data-brand="ontrack"] .media-item,html[data-brand="ontrack"] .media-add,html[data-brand="ontrack"] .goal-row,html[data-brand="ontrack"] .system-panel{background:#fff!important;border-color:var(--ot-line)!important;color:var(--ot-ink)!important;box-shadow:none!important}
+html[data-brand="ontrack"] .text-btn,html[data-brand="ontrack"] .back-link{color:var(--ot-cobalt)!important}
+html[data-brand="ontrack"] input:focus,html[data-brand="ontrack"] select:focus,html[data-brand="ontrack"] textarea:focus{border-color:var(--ot-cobalt)!important;box-shadow:0 0 0 3px #2957b218!important}
+select option{background:#fff;color:var(--ot-ink)}
+.system-head p,.system-section>p,.system-note,.page-head p,.section-head p,.preview-card p{color:var(--ot-muted)!important;font-size:13px!important;line-height:1.55}
+.system-field{font-size:13px!important;color:var(--ot-muted)!important}
+.system-field input,.system-field select,.system-field textarea{font-size:16px!important;border-radius:12px}
+.system-tab{font-size:13px;min-height:44px}
+html[data-brand="ontrack"] .system-tab.active{background:#edf2fc!important;color:var(--ot-cobalt)!important;border-color:#cfdaef!important}
+html[data-brand="ontrack"] .system-head>div>span{color:var(--ot-muted)!important}
+.ot-plan-dialog,.ot-plans-dialog{background:#fff;color:var(--ot-ink)}
+.ot-plan-dialog::backdrop,.ot-plans-dialog::backdrop{background:#18202b66;backdrop-filter:blur(8px)}
+.ot-plan-panel header h2,.ot-plans-panel header h2{font-size:clamp(26px,4vw,38px);line-height:1.15;font-weight:600}
+.ot-plan-panel header p,.ot-assumptions p,.ot-plan-tasks div{font-size:15px;color:var(--ot-muted);line-height:1.55}
+.ot-plan-panel header span,.ot-plans-panel header span,.ot-plan-row small,.ot-plan-row em{font-size:12px;color:var(--ot-muted)}
+.ot-plan-row b{font-size:15px}
+.ot-secondary{font-size:14px;min-height:48px}
+.ot-plan-panel footer{position:sticky;bottom:0;padding:20px 0 max(12px,env(safe-area-inset-bottom));background:#fff}
+.ot-tour-panel{max-width:680px;justify-content:center;gap:24px}
+.ot-tour-panel header{padding-bottom:0;border:0}
+.ot-tour-demo{padding:28px;border:1px solid var(--ot-line);border-radius:22px;background:#f8f9fb;color:var(--ot-ink);font-size:16px;line-height:1.6}
+.ot-demo-label{display:block;margin-bottom:16px;font-size:12px;letter-spacing:.06em;color:var(--ot-cobalt)}
+.ot-tour-note{font-size:12px;color:var(--ot-muted);margin:0}
+.ot-tour-panel footer{margin-top:auto}
+@media(max-width:900px){
+  .sidebar{height:66px!important;width:calc(100vw - 24px)!important;max-width:480px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important}
+  .sidebar nav{gap:0!important;justify-content:space-between!important}
+  html[data-brand="ontrack"] .nav-btn{flex:1!important;min-width:0!important;flex-direction:column!important;gap:4px!important;padding:5px 6px!important;height:52px!important}
+  .ot-nav-label{font-size:11px!important}
+  .nav-btn>span:first-child{font-size:16px!important}
 }
-
-html,body,#app,
-.shell,
-.workspace,
-.ot-home,
-.page-wrap,
-.calendar-page{
-  background:
-    radial-gradient(58rem 38rem at 50% 37%, rgba(230,251,255,.96) 0%, rgba(174,207,239,.74) 15%, rgba(116,164,222,.48) 29%, transparent 50%),
-    radial-gradient(40rem 34rem at 8% 58%, rgba(88,141,219,.82) 0%, transparent 68%),
-    radial-gradient(44rem 42rem at 96% 55%, rgba(141,183,226,.70) 0%, transparent 66%),
-    linear-gradient(180deg,var(--ot-cobalt-900) 0%,var(--ot-cobalt-700) 36%,#6f9ed8 66%,var(--ot-ice-300) 100%)!important;
-  color:var(--ot-ink)!important;
-  background-attachment:fixed!important;
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  pointer-events:none;
-  background:
-    radial-gradient(42rem 28rem at 50% 48%,rgba(255,255,255,.46),transparent 65%),
-    linear-gradient(116deg,rgba(255,255,255,.06),transparent 35%,rgba(255,255,255,.08) 62%,transparent);
-}
-
-/* The floating product dock becomes the main liquid-metal / liquid-glass object. */
-.sidebar{
-  --glass-x:50%;
-  --glass-y:50%;
-  overflow:hidden!important;
-  border:1px solid rgba(255,255,255,.34)!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.22),rgba(207,229,255,.09))!important;
-  box-shadow:
-    0 22px 70px rgba(6,31,82,.32),
-    inset 0 1px 0 rgba(255,255,255,.74),
-    inset 0 -1px 0 rgba(255,255,255,.11),
-    inset 18px 0 30px rgba(182,214,255,.08),
-    inset -18px 0 30px rgba(67,108,180,.10)!important;
-  backdrop-filter:blur(28px) saturate(165%) contrast(102%)!important;
-  -webkit-backdrop-filter:blur(28px) saturate(165%) contrast(102%)!important;
-}
-.sidebar::before{
-  content:"";
-  position:absolute;
-  inset:-1px;
-  border-radius:inherit;
-  pointer-events:none;
-  background:
-    radial-gradient(150px 58px at var(--glass-x) var(--glass-y),rgba(255,255,255,.72),rgba(216,236,255,.25) 34%,transparent 70%),
-    linear-gradient(112deg,rgba(255,255,255,.46),rgba(255,255,255,.05) 24%,rgba(137,180,237,.20) 54%,rgba(255,255,255,.42) 82%,rgba(255,255,255,.12));
-  mix-blend-mode:screen;
-  opacity:.7;
-  transition:opacity .18s ease;
-}
-.sidebar::after{
-  content:"";
-  position:absolute;
-  inset:1px;
-  border-radius:inherit;
-  pointer-events:none;
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.12),
-    inset 0 8px 18px rgba(255,255,255,.11),
-    inset 0 -10px 24px rgba(25,66,136,.10);
-}
-.sidebar:hover::before{opacity:1}
-.sidebar nav{position:relative;z-index:1}
-
-.nav-btn{
-  color:rgba(247,251,255,.72)!important;
-  text-shadow:0 1px 14px rgba(20,54,115,.28);
-  transition:background .22s ease,color .22s ease,box-shadow .22s ease,transform .22s ease!important;
-}
-.nav-btn:hover{
-  background:rgba(255,255,255,.10)!important;
-  color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.15)!important;
-}
-.nav-btn.active{
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.78),rgba(222,239,255,.54))!important;
-  color:#1f4c9f!important;
-  box-shadow:
-    0 6px 20px rgba(16,56,130,.18),
-    inset 0 1px 0 #fff,
-    inset 0 -1px 0 rgba(76,126,196,.14)!important;
-}
-.nav-btn.active>span:first-child{color:#1f4c9f!important}
-
-/* Top chrome */
-.ot-topbar{color:#fff}
-.ot-wordmark{color:#fff!important;text-shadow:0 1px 18px rgba(14,49,109,.28)}
-.ot-wordmark svg circle,.ot-wordmark svg path,
-.ot-intro-mark svg circle,.ot-intro-mark svg path{stroke:#f8fcff!important}
-.ot-date{color:rgba(245,250,255,.67)!important}
-.ot-sync{
-  border-color:rgba(255,255,255,.28)!important;
-  background:rgba(237,246,255,.14)!important;
-  color:rgba(255,255,255,.80)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 24px rgba(20,58,120,.12)!important;
-  backdrop-filter:blur(18px) saturate(150%)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
-}
-.ot-sync span{background:#eaf8ff!important;box-shadow:0 0 12px rgba(224,246,255,.9)}
-
-/* Hero typography stays Anything-like; material and colour shift to liquid glass. */
-.ot-eyebrow{color:rgba(247,251,255,.74)!important}
-.ot-intro h1{
-  color:#fff!important;
-  text-shadow:0 5px 40px rgba(18,54,115,.20);
-}
-.ot-intro-copy{color:rgba(245,250,255,.72)!important}
-.ot-intro-mark{filter:drop-shadow(0 10px 28px rgba(18,61,136,.20))}
-
-/* Glass composer */
-.ot-prompt-field{
-  position:relative;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.44)!important;
-  background:
-    linear-gradient(180deg,rgba(245,250,255,.26),rgba(209,230,255,.14))!important;
-  box-shadow:
-    0 24px 70px rgba(17,57,129,.22),
-    inset 0 1px 0 rgba(255,255,255,.84),
-    inset 0 -1px 0 rgba(255,255,255,.10)!important;
-  backdrop-filter:blur(30px) saturate(160%)!important;
-  -webkit-backdrop-filter:blur(30px) saturate(160%)!important;
-}
-.ot-prompt-field::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:linear-gradient(116deg,rgba(255,255,255,.28),transparent 28%,rgba(255,255,255,.08) 62%,rgba(255,255,255,.24));
-}
-.ot-command textarea{
-  position:relative;
-  z-index:1;
-  color:#fff!important;
-  text-shadow:0 1px 14px rgba(30,72,140,.18);
-}
-.ot-command textarea::placeholder{color:rgba(245,250,255,.58)!important}
-.ot-plan-button{
-  position:relative;
-  z-index:1;
-  border:1px solid rgba(255,255,255,.62)!important;
-  background:linear-gradient(180deg,rgba(250,253,255,.96),rgba(211,232,255,.82))!important;
-  color:#2451a6!important;
-  box-shadow:
-    0 8px 24px rgba(13,52,125,.23),
-    inset 0 1px 0 #fff!important;
-}
-.ot-plan-button:hover{box-shadow:0 12px 34px rgba(13,52,125,.28),inset 0 1px 0 #fff!important}
-
-.ot-chips button{
-  border-color:rgba(255,255,255,.25)!important;
-  background:linear-gradient(180deg,rgba(236,246,255,.16),rgba(191,217,250,.09))!important;
-  color:rgba(255,255,255,.88)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 12px 34px rgba(17,57,129,.08)!important;
-  backdrop-filter:blur(20px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
-}
-.ot-chips button:hover{
-  background:linear-gradient(180deg,rgba(248,252,255,.25),rgba(205,226,255,.14))!important;
-}
-.ot-chips em{color:rgba(255,255,255,.68)!important}
-.ot-plan-status{color:rgba(255,255,255,.72)!important}
-
-/* Editorial sections become thin glass strata, not card soup. */
-.ot-life{
-  border-top-color:rgba(255,255,255,.20)!important;
-  background:linear-gradient(180deg,rgba(117,161,216,.05),rgba(217,231,248,.08));
-}
-.ot-life-heading p,.ot-life-heading>span{color:rgba(245,250,255,.66)!important}
-.ot-life-heading h2{color:#fff!important;text-shadow:0 4px 32px rgba(24,61,126,.16)}
-.ot-plain-section{border-top-color:rgba(255,255,255,.24)!important}
-.ot-section-head span{color:rgba(244,249,255,.57)!important}
-.ot-section-head h3{color:#fff!important}
-.ot-section-head button{color:rgba(255,255,255,.70)!important}
-.ot-section-head button:hover{color:#fff!important}
-
-.ot-focus-row,.ot-next-row,.ot-priority-row{
-  color:#fff!important;
-  border-bottom-color:rgba(255,255,255,.17)!important;
-}
-.ot-focus-row small,.ot-next-row time span,.ot-duration,
-.ot-priority-copy small,.ot-priority-index,.ot-priority-progress em,.ot-empty{
-  color:rgba(245,250,255,.60)!important;
-}
-.ot-next-row time b{color:rgba(255,255,255,.88)!important}
-.ot-check{border-color:rgba(255,255,255,.42)!important}
-.ot-focus-row.done .ot-check{
-  background:rgba(242,250,255,.92)!important;
-  border-color:#fff!important;
-  color:#2755aa!important;
-}
-.ot-suggest-dot{background:#e6f6ff!important;box-shadow:0 0 14px rgba(221,245,255,.68)}
-.ot-priority-progress i{
-  background:linear-gradient(90deg,#f7fcff var(--p),rgba(255,255,255,.18) var(--p))!important;
-}
-
-/* Full-screen plan sheets: translucent cobalt glass instead of opaque cream. */
-.ot-plan-dialog,.ot-plans-dialog{
-  background:
-    radial-gradient(48rem 34rem at 52% 22%,rgba(225,246,255,.72),rgba(121,169,224,.38) 30%,transparent 60%),
-    linear-gradient(180deg,#2d63bd 0%,#5485d0 52%,#a7c1e2 100%)!important;
-  color:#fff!important;
-}
-.ot-plan-dialog::backdrop,.ot-plans-dialog::backdrop{
-  background:rgba(13,40,95,.58)!important;
-  backdrop-filter:blur(14px)!important;
-}
-.ot-plan-panel,.ot-plans-panel{color:#fff!important}
-.ot-plan-panel header span,.ot-plans-panel header span,.ot-plan-panel section h3{
-  color:rgba(245,250,255,.62)!important;
-}
-.ot-plan-panel header h2,.ot-plans-panel header h2{color:#fff!important}
-.ot-plan-panel header p,.ot-assumptions p{color:rgba(245,250,255,.70)!important}
-.ot-plan-panel header button,.ot-plans-panel header button{
-  border-color:rgba(255,255,255,.34)!important;
-  background:rgba(238,248,255,.16)!important;
-  color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.38)!important;
-  backdrop-filter:blur(16px)!important;
-}
-.ot-plan-meta span,.ot-slot-list div{
-  border-color:rgba(255,255,255,.26)!important;
-  background:rgba(239,248,255,.13)!important;
-  color:rgba(255,255,255,.80)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.25)!important;
-  backdrop-filter:blur(18px)!important;
-}
-.ot-plan-panel section{border-top-color:rgba(255,255,255,.20)!important}
-.ot-plan-tasks div,.ot-plan-row{border-bottom-color:rgba(255,255,255,.17)!important;color:#fff!important}
-.ot-plan-tasks span,.ot-slot-list span,.ot-slot-list em,.ot-plan-row small,.ot-plan-row em{
-  color:rgba(245,250,255,.60)!important;
-}
-.ot-plan-status-dot.active{background:#f5fbff!important;box-shadow:0 0 14px rgba(237,250,255,.7)}
-.ot-secondary{
-  background:rgba(229,242,255,.15)!important;
-  border-color:rgba(255,255,255,.27)!important;
-  color:#fff!important;
-  backdrop-filter:blur(18px)!important;
-}
-.ot-apply{
-  background:linear-gradient(180deg,#f8fcff,#d9ebff)!important;
-  border-color:#fff!important;
-  color:#2755a8!important;
-  box-shadow:0 12px 34px rgba(15,54,129,.20),inset 0 1px 0 #fff!important;
-}
-
-/* Existing specialist screens get glass surfaces while preserving structure. */
-.page-head h1,.editor-card h3,.preview-card h2,.side-title h3{color:#fff!important}
-.page-head p,.section-head p,.preview-card p{color:rgba(245,250,255,.66)!important}
-.editor-card,.preview-card,.side-card,.media-item,.media-add,
-.calendar-shell,.editor-section,.task-row{
-  border-color:rgba(255,255,255,.23)!important;
-  background:linear-gradient(180deg,rgba(239,248,255,.17),rgba(194,218,248,.09))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 18px 50px rgba(16,55,126,.10)!important;
-  backdrop-filter:blur(24px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(24px) saturate(145%)!important;
-}
-input,select,textarea,
-.system-field input,.system-field select,.system-field textarea,.focus-add input{
-  border-color:rgba(255,255,255,.26)!important;
-  background:rgba(235,246,255,.13)!important;
-  color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)!important;
-  backdrop-filter:blur(15px)!important;
-}
-input::placeholder,textarea::placeholder{color:rgba(245,250,255,.52)!important}
-input:focus,select:focus,textarea:focus{
-  border-color:rgba(255,255,255,.58)!important;
-  box-shadow:0 0 0 3px rgba(224,242,255,.12),inset 0 1px 0 rgba(255,255,255,.24)!important;
-}
-.primary,.system-button.primary{
-  background:linear-gradient(180deg,#f8fcff,#dcecff)!important;
-  color:#2856a8!important;
-  border-color:#fff!important;
-}
-.secondary,.system-button{
-  background:rgba(226,240,255,.13)!important;
-  color:#fff!important;
-  border-color:rgba(255,255,255,.24)!important;
-}
-.text-btn,.back-link{color:#f4fbff!important}
-.long-bar,.goal-progress>div{background:rgba(255,255,255,.18)!important}
-.long-bar i,.goal-progress i{background:linear-gradient(90deg,#eefaff,#bedbfa)!important}
-
-.calendar-hero{
-  background:linear-gradient(180deg,rgba(238,248,255,.16),rgba(197,220,249,.08))!important;
-  color:#fff!important;
-  border-bottom-color:rgba(255,255,255,.18)!important;
-  backdrop-filter:blur(20px)!important;
-}
-.time-head,.day-head{background:rgba(232,244,255,.10)!important;color:rgba(245,250,255,.64)!important;border-color:rgba(255,255,255,.16)!important}
-.day-head strong{color:#fff!important}
-.time-axis,.day-col,.hour-line{border-color:rgba(255,255,255,.13)!important}
-.time-axis span{color:rgba(245,250,255,.54)!important}
-.plan-block{
-  background:linear-gradient(180deg,rgba(248,252,255,.87),rgba(210,230,252,.72))!important;
-  color:#2451a1!important;
-  border-color:rgba(255,255,255,.82)!important;
-  box-shadow:0 8px 24px rgba(20,58,128,.17),inset 0 1px 0 #fff!important;
-}
-.plan-block small{color:#5779b5!important}
-
-/* System sheets */
-.system-dialog,.focus-dialog{
-  background:linear-gradient(180deg,rgba(87,132,197,.86),rgba(114,157,211,.82))!important;
-  color:#fff!important;
-  border-color:rgba(255,255,255,.30)!important;
-  box-shadow:0 35px 100px rgba(9,38,95,.35),inset 0 1px 0 rgba(255,255,255,.35)!important;
-  backdrop-filter:blur(34px) saturate(155%)!important;
-}
-.system-dialog::backdrop,.focus-dialog::backdrop{background:rgba(20,50,103,.38)!important}
-.system-panel,.system-head{background:transparent!important}
-.system-head{border-color:rgba(255,255,255,.18)!important}
-.system-head h2,.system-section h3{color:#fff!important}
-.system-head p,.system-section>p,.system-note,.system-field{color:rgba(245,250,255,.68)!important}
-.system-head>div>span{color:rgba(245,250,255,.56)!important}
-.system-close{
-  background:rgba(236,247,255,.13)!important;
-  border-color:rgba(255,255,255,.28)!important;
-  color:#fff!important;
-}
-.system-tab{background:rgba(225,241,255,.08)!important;border-color:rgba(255,255,255,.20)!important;color:rgba(255,255,255,.70)!important}
-.system-tab.active{
-  background:rgba(247,252,255,.88)!important;
-  color:#2855a5!important;
-  border-color:#fff!important;
-}
-.system-actions{border-color:rgba(255,255,255,.17)!important}
-.focus-row{
-  background:rgba(235,246,255,.10)!important;
-  border-color:rgba(255,255,255,.20)!important;
-}
-.focus-row input[type=text]{color:#fff!important}
-.focus-check{border-color:rgba(255,255,255,.43)!important}
-.focus-row.done .focus-check{background:#edf9ff!important;border-color:#fff!important;color:#2855a6!important}
-
-/* Planning interstitial carries the same cobalt/liquid material instead of black. */
-.ot-thinking-stage{
-  background:
-    radial-gradient(32rem 28rem at 50% 46%,rgba(227,249,255,.58),rgba(95,147,211,.32) 38%,transparent 68%),
-    linear-gradient(180deg,#1f4b9f,#4777c5 58%,#91b1dc)!important;
-}
-.ot-thinking-stage::before{
-  content:"";
-  position:absolute;
-  width:min(54vw,540px);
-  aspect-ratio:1;
-  border-radius:50%;
-  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.68),rgba(225,244,255,.23) 31%,rgba(79,127,197,.18) 62%,transparent 72%);
-  filter:blur(5px);
-  opacity:.65;
-}
-.ot-thinking-mark,.ot-thinking-stage p{position:relative;z-index:1}
-.ot-thinking-stage p{color:rgba(255,255,255,.88)!important}
-
-@media(prefers-reduced-motion:reduce){
-  .sidebar::before{transition:none}
-}
-
 @media(max-width:780px){
-  .ot-plan-panel footer{background:linear-gradient(180deg,transparent,rgba(90,136,200,.78) 28%,rgba(105,150,208,.92))!important}
+  .ot-topbar{height:76px;padding:0 18px;gap:12px}
+  .ot-topbar-actions{gap:2px}
+  .ot-home-main{padding:0 18px 28px;gap:24px}
+  .ot-life{padding:18px 0 0}
+  .ot-life-heading{margin-bottom:24px}
+  .ot-life-layout{grid-template-columns:minmax(0,1fr);gap:16px}
+  .ot-plain-section{padding:20px;border-radius:20px}
+  .ot-intro{padding:24px 0 0}
+  .ot-chips{grid-template-columns:1fr}
+  .ot-life-heading h1{font-size:32px}
+  .ot-plan-panel header h2,.ot-plans-panel header h2{font-size:30px}
+  .ot-plan-panel footer{grid-template-columns:1fr 1fr}
 }
+@media(max-width:360px){
+  .ot-topbar{padding:0 14px}
+  .ot-tour-button,.ot-sync{padding:8px 10px;font-size:11px}
+  .ot-home-main{padding-inline:14px}
+  .ot-plain-section{padding:16px}
+  .ot-section-head h3{font-size:18px}
+  .ot-nav-label{font-size:10px!important}
+  .ot-next-row{grid-template-columns:65px minmax(0,1fr) auto}
+}
+html[data-brand="ontrack"] .auth-root,html[data-brand="ontrack"] .auth-stage{background:var(--ot-bg)!important;color:var(--ot-ink)!important}
+.auth-atmosphere{display:none}
+html[data-brand="ontrack"] .auth-card{background:#fff!important;border-color:var(--ot-line)!important;border-radius:24px;box-shadow:0 16px 60px #18202b0c}
+.auth-brand{color:var(--ot-cobalt);letter-spacing:.08em;font:600 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.auth-heading h1{color:var(--ot-ink);font-size:34px;line-height:1.15;font-weight:600}
+.auth-heading span,.auth-heading p{color:var(--ot-muted)}
+.auth-form label{color:var(--ot-muted);font-size:13px;font-weight:500;letter-spacing:0;text-transform:none}
+html[data-brand="ontrack"] .auth-primary{background:var(--ot-cobalt)!important;color:#fff!important;border-color:var(--ot-cobalt)!important;border-radius:14px;font:600 14px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}
+html[data-brand="ontrack"] .auth-primary:hover{background:#234b9a!important}
+html[data-brand="ontrack"] .auth-link{color:var(--ot-cobalt)!important;min-height:44px;font-size:14px}
+.auth-feedback{background:#edf2fc;color:#254878;border-color:#d5dfef;font-size:14px}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--ot-cobalt)!important;outline-offset:3px}
+.ot-plan-row[data-action="new-goal"]{display:flex;min-height:52px;border-radius:14px;background:#edf2fc;color:var(--ot-cobalt);padding:12px 16px;font-size:15px;margin-bottom:16px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}

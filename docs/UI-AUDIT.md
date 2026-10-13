@@ -1,5 +1,11 @@
 # ONTRACK app and UI audit
 
+## Anything reference applied
+
+The 11 supplied onboarding screenshots informed a functional UI pass: Today is the first home section, followed by upcoming work and plans; the planner is compact and its optional shortcuts are collapsed. Neutral surfaces replace the full-page cobalt glass treatment, while cobalt remains the action/selection accent. Labels, body copy, buttons and keyboard focus are more readable. The floating dock retains the existing destinations and uses labelled, larger targets. Empty accounts have an inline first-plan action. A three-step, skippable Quick tour demonstrates focus, weekly planning and reviewing a proposed plan. Authentication keeps its existing behaviour with simpler form styling.
+
+The changes extend draft PR #19. Real account authentication, cloud sync and the separate legacy/dated calendar stores still require the previously noted follow-up. CI captures synthetic fixture screenshots for internal visual review.
+
 Audited source baseline: `d815e566b3d9ba699bb6fb4e8280653bf40582b6`.
 
 This is a source and build audit. The live browser timed out twice before returning page state. Visual appearance, real sign-in, cloud propagation and production planner configuration have not been verified. No account records were changed.
