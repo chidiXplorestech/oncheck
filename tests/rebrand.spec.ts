@@ -26,6 +26,7 @@ test('Week Vault and Settings keep the same identity on phone', async ({ page },
   await page.locator('.sidebar [data-nav="calendar"]').click();
   await expect(page.locator('.ot-screen-bar')).toBeVisible();
   await expect(page.locator('.calendar-page')).toBeVisible();
+  await expect(page.locator('.ot-calendar-scroll')).toHaveCSS('overflow-x', 'auto');
   await page.screenshot({ path: testInfo.outputPath('week-phone.png'), fullPage: true });
   await page.locator('.sidebar [data-nav="media"]').click();
   await expect(page.locator('.media-grid')).toBeVisible();

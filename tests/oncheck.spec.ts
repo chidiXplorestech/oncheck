@@ -7,7 +7,7 @@ const onePixelPng = Buffer.from(
 
 async function openGoal(page: import('@playwright/test').Page, id: string) {
   await page.locator('[data-v3-all-plans]').click();
-  await page.locator(`.ot-plans-dialog [data-action="edit-goal"][data-id="${id}"]`).click();
+  await page.locator(`.ot-plans-page [data-action="edit-goal"][data-id="${id}"]`).click();
 }
 
 test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) => {

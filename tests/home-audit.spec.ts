@@ -20,7 +20,7 @@ test('All plans lets an empty account create its first plan', async ({ page }) =
   await page.addInitScript(() => localStorage.setItem('oncheck-state-v1', JSON.stringify({ goals: [], blocks: [], media: [] })));
   await page.goto('/');
   await page.locator('[data-v3-all-plans]').click();
-  await page.getByRole('button', { name: 'Create a plan' }).click();
+  await page.getByRole('button', { name: 'Create your first plan' }).click();
   await expect(page.locator('dialog.modal')).toBeVisible();
   await page.getByLabel('Goal title').fill('First plan');
   await page.getByRole('button', { name: 'Save Goal', exact: true }).click();

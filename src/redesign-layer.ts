@@ -192,6 +192,20 @@ function screenHeader(label: string) {
 function patchScreenChrome() {
   const workspace = document.querySelector<HTMLElement>('.workspace');
   if (!workspace || workspace.querySelector('.ot-home,.ot-plans-page,.ot-screen-bar')) return;
+  const calendar = workspace.querySelector('.calendar-shell');
+  if (calendar && !calendar.closest('.ot-calendar-scroll')) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ot-calendar-scroll';
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', 'Weekly calendar, scroll horizontally to view every day');
+    wrapper.tabIndex = 0;
+    calendar.before(wrapper);
+    wrapper.append(calendar);
+    const hint = document.createElement('p');
+    hint.className = 'ot-calendar-hint';
+    hint.textContent = 'Swipe across to see your full week.';
+    wrapper.before(hint);
+  }
   const label = workspace.querySelector('.calendar-page') ? 'Week' : workspace.querySelector('.media-grid') ? 'Vault' : 'Plan';
   workspace.insertAdjacentHTML('afterbegin', screenHeader(label));
 }
@@ -202,7 +216,7 @@ function showPlansPage() {
   const state = readCoreState();
   workspace.innerHTML = `<div class="ot-plans-page">${screenHeader('Plans')}<div class="ot-collection">
     <div class="ot-collection-head"><div><p class="ot-eyebrow">THE BIGGER PICTURE</p><h1>Your plans.<br><span>Your own pace.</span></h1><p>A place for what you’re working towards.</p></div><button type="button" class="primary" data-action="new-goal">+ New plan</button></div>
-    <div class="ot-plan-tools"><label class="ot-search">${navIcon('media')}<input type="search" aria-label="Search plans" placeholder="Find a plan…" data-plan-search></label><div class="ot-plan-filters" aria-label="Filter plans"><button type="button" class="active" data-plan-filter="all" aria-pressed="true">All plans</button><button type="button" data-plan-filter="active" aria-pressed="false">Active</button><button type="button" data-plan-filter="on-hold" aria-pressed="false">On hold</button><button type="button" data-plan-filter="completed" aria-pressed="false">Completed</button></div></div>
+    <div class="ot-plan-tools"><label class="ot-search">${navIcon('search')}<input type="search" aria-label="Search plans" placeholder="Find a plan…" data-plan-search></label><div class="ot-plan-filters" aria-label="Filter plans"><button type="button" class="active" data-plan-filter="all" aria-pressed="true">All plans</button><button type="button" data-plan-filter="active" aria-pressed="false">Active</button><button type="button" data-plan-filter="on-hold" aria-pressed="false">On hold</button><button type="button" data-plan-filter="completed" aria-pressed="false">Completed</button></div></div>
     <div class="ot-plan-collection">${state.goals.map((goal, index) => `<button type="button" class="ot-collection-card" data-action="edit-goal" data-id="${goal.id}" data-plan-card data-plan-title="${esc(goal.title.toLowerCase())}" data-plan-status="${goal.status}" style="--card-tone:${index % 3}"><span class="ot-card-symbol">${navIcon('goals')}</span><span class="ot-card-category">${esc(goal.category)}</span><h2>${esc(goal.title)}</h2><p>${esc(goal.tasks.find(task => !task.done)?.title || 'Take a moment to review your next step.')}</p><div class="ot-card-footer"><span>${goal.status.replace('-', ' ')}</span><b>${progress(goal)}% <span aria-hidden="true">↗</span></b></div><i style="--p:${progress(goal)}%"></i></button>`).join('')}</div>
     <div class="ot-collection-empty" ${state.goals.length ? 'hidden' : ''}><h2>A little room for possibility.</h2><p>Start with one thing you want to make happen.</p><button type="button" class="primary" data-action="new-goal">Create your first plan</button></div>
     <p class="ot-no-matches" hidden>No plans match. Try another search or filter.</p>
@@ -480,37 +494,7 @@ async function requestPlan(intent: string) {
   return payload.plan as AiPlan;
 }
 
-function openPlans() {
-  document.querySelector<HTMLDialogElement>('.ot-plans-dialog')?.close();
-  const state = readCoreState();
-  const dialog = document.createElement('dialog');
-  dialog.className = 'ot-plans-dialog';
-  dialog.setAttribute('aria-label', 'Your plans');
-  dialog.innerHTML = `
-    <div class="ot-plans-panel">
-      <header>
-        <div><span>YOUR PLANS</span><h2>Everything, without making everything urgent.</h2></div>
-        <button type="button" data-v3-plans-close aria-label="Close">×</button>
-      </header>
-      <div class="ot-plans-list">
-        <button type="button" class="ot-plan-row" data-action="new-goal">+ Create a plan</button>
-        ${state.goals.map(goal => `
-          <button type="button" class="ot-plan-row" data-action="edit-goal" data-id="${goal.id}">
-            <span class="ot-plan-status-dot ${goal.status}"></span>
-            <span><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${goal.status.replace('-', ' ')}</small></span>
-            <em>${progress(goal)}%</em>
-          </button>`).join('')}
-      </div>
-    </div>`;
-  document.body.append(dialog);
-  dialog.querySelector('[data-v3-plans-close]')?.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => {
-    const button = (event.target as HTMLElement).closest('[data-action="edit-goal"],[data-action="new-goal"]');
-    if (button) queueMicrotask(() => dialog.close());
-  });
-  dialog.addEventListener('close', () => dialog.remove(), { once: true });
-  dialog.showModal();
-}
+function openPlans() { showPlansPage(); }
 
 function previewPlan(plan: AiPlan, sourceText: string) {
   document.querySelector<HTMLDialogElement>('.ot-plan-dialog')?.close();
