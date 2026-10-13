@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test('Plans is a searchable collection before editing a plan', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+    await page.evaluate(async () => { await document.fonts.ready; });
   await page.locator('.sidebar [data-nav="goals"]').click();
   await expect(page.locator('.ot-plans-page')).toBeVisible();
   await expect(page.locator('#goalForm')).toHaveCount(0);
@@ -23,6 +24,7 @@ test('Plans is a searchable collection before editing a plan', async ({ page }, 
 test('Week Vault and Settings keep the same identity on phone', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+    await page.evaluate(async () => { await document.fonts.ready; });
   await page.locator('.sidebar [data-nav="calendar"]').click();
   await expect(page.locator('.ot-screen-bar')).toBeVisible();
   await expect(page.locator('.calendar-page')).toBeVisible();
@@ -34,4 +36,14 @@ test('Week Vault and Settings keep the same identity on phone', async ({ page },
   await page.locator('.oncheck-system-nav').click();
   await expect(page.locator('.system-dialog')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('settings-phone.png') });
+});
+
+test('Training remains available from the redesigned plan collection', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.evaluate(async () => { await document.fonts.ready; });
+  await page.locator('[data-v3-all-plans]').click();
+  await page.locator('[data-plan-card][data-id="training"]').click();
+  await expect(page.locator('.training-space')).toBeVisible();
+  await page.locator('.training-space').screenshot({ path: testInfo.outputPath('training-phone.png') });
 });

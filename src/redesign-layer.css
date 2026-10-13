@@ -116,7 +116,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-vi
 /* The plan collection is a destination, not an editor opened by default. */
 .ot-collection-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:14px 0 32px}.ot-collection-head>div>p:last-child{font-size:14px;color:var(--ot-muted);margin:0}
 .ot-plan-tools{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:26px;flex-wrap:wrap}
-.ot-search{position:relative;display:flex;align-items:center;gap:10px;min-width:220px;max-width:330px;padding:0!important;color:var(--ot-muted)}.ot-search svg{width:18px;height:18px;flex-shrink:0}.ot-search input{background:transparent!important;border:0!important;padding:10px 0!important;box-shadow:none!important;min-width:0}
+.ot-search{position:relative;display:flex;flex-direction:row!important;align-items:center;gap:10px;min-width:220px;max-width:330px;padding:0!important;color:var(--ot-muted)}.ot-search svg{width:18px;height:18px;flex-shrink:0}.ot-search input{background:transparent!important;border:0!important;padding:10px 0!important;box-shadow:none!important;min-width:0}
 .ot-plan-filters{display:flex;flex-wrap:wrap;gap:4px}.ot-plan-filters button{min-height:42px;border:0;border-radius:999px;padding:8px 13px;background:transparent;color:var(--ot-muted);font-size:12px}.ot-plan-filters button.active{background:var(--ot-dark);color:#faf9f1}
 .ot-plan-collection{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .ot-collection-card{display:flex;flex-direction:column;text-align:left;min-height:282px;min-width:0;padding:24px;background:#eceee1;border:1px solid #dedfd0;border-radius:20px;color:var(--ot-ink)}
@@ -129,7 +129,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-vi
 .ot-collection-card>i{width:100%;height:3px;background:linear-gradient(90deg,#777b61 var(--p),#d0d2c2 var(--p));margin-top:14px;border-radius:3px}
 .ot-collection-empty{padding:60px 20px;text-align:center;border:1px dashed #cbcdbb;border-radius:22px}.ot-collection-empty h2{font-size:28px;font-weight:500}.ot-collection-empty p,.ot-no-matches{color:var(--ot-muted);font-size:14px}
 /* Shared controls and specialist screens. */
-.primary,.auth-primary,.system-button.primary,.ot-apply,.workout-next{background:var(--ot-accent)!important;color:var(--ot-ink)!important;border:1px solid transparent!important;box-shadow:none!important;min-height:46px!important;padding:11px 17px;border-radius:12px!important;font-size:13px!important;font-weight:650!important;letter-spacing:-.01em!important}
+.primary,.auth-primary,.system-button.primary,.ot-apply,.workout-next{background:var(--ot-accent)!important;color:var(--ot-ink)!important;border:1px solid transparent!important;box-shadow:none!important;min-height:46px!important;padding:11px 17px;border-radius:12px!important;font-family:inherit!important;font-size:13px!important;font-weight:650!important;letter-spacing:-.01em!important}
 .primary:hover,.auth-primary:hover,.system-button.primary:hover,.ot-apply:hover{background:#e9c83a!important}
 .secondary,.system-button,.ot-secondary,.workout-ghost{background:#eeeee5!important;color:var(--ot-ink)!important;border:1px solid #d9dacb!important;min-height:44px;border-radius:12px!important;font-size:13px}
 .danger{background:#faede6!important;color:#9b4532!important;border:1px solid #edd6cd!important;border-radius:10px;min-height:44px;font-size:12px}

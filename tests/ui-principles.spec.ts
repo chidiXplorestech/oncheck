@@ -4,6 +4,7 @@ for (const viewport of [{ width: 320, height: 700 }, { width: 390, height: 844 }
   test(`daily actions come first at ${viewport.width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
+    await page.evaluate(async () => { await document.fonts.ready; });
     const today = await page.locator('.ot-today').boundingBox();
     const planner = await page.locator('.ot-intro').boundingBox();
     expect(today).not.toBeNull();
@@ -21,6 +22,7 @@ for (const viewport of [{ width: 320, height: 700 }, { width: 390, height: 844 }
 test('quick tour can be completed or skipped without changing plans', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+    await page.evaluate(async () => { await document.fonts.ready; });
   const before = await page.locator('.ot-priority-row').allTextContents();
   await page.getByRole('button', { name: 'Quick tour' }).click();
   await expect(page.getByRole('dialog', { name: 'How ONTRACK works' })).toBeVisible();
