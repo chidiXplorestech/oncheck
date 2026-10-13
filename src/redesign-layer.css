@@ -8,7 +8,7 @@ html[data-brand="ontrack"]{
   --bg:var(--ot-bg);--panel:var(--ot-surface);--panel2:#eeeee5;--line:var(--ot-line);
   --text:var(--ot-ink);--muted:var(--ot-muted);--blue:#aaa568;--green:#b4be8b;color-scheme:light;
 }
-html,body,#app{background:var(--ot-bg)!important;color:var(--ot-ink)!important}
+html,body,#app{background:var(--ot-bg)!important;color:var(--ot-ink)!important;font-family:'Manrope Variable',Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 body{margin:0;font-family:'Manrope Variable',Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;letter-spacing:-.02em}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}button:disabled{cursor:default;opacity:.55}
@@ -140,6 +140,8 @@ input[type=checkbox],input[type=radio]{min-height:0;padding:0;accent-color:#6a72
 .page-wrap,.calendar-page{max-width:1190px;width:100%;margin:0 auto!important;padding:12px 48px 36px!important;background:transparent!important;color:var(--ot-ink)!important}
 .page-head{margin-bottom:28px;gap:18px;align-items:flex-end}.page-head h1{font-size:36px!important;line-height:1.15;font-weight:550!important;color:var(--ot-ink)!important;letter-spacing:-.055em}
 .page-head p,.section-head p,.preview-card p{font-size:13px!important;line-height:1.55;color:var(--ot-muted)!important}
+.page-head .eyebrow{color:var(--ot-muted)!important}
+.progress-readout b{color:var(--ot-ink)!important}
 .editor-layout{display:grid!important;grid-template-columns:minmax(0,1fr) 290px!important;gap:26px!important}
 .editor-layout>section,.editor-aside{min-width:0}.editor-aside{padding-top:85px}
 .editor-card,.preview-card,.side-card{border:1px solid var(--ot-line)!important;background:var(--ot-surface)!important;border-radius:20px!important;box-shadow:none!important;color:var(--ot-ink)!important;padding:24px!important}
