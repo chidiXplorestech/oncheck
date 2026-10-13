@@ -1,5 +1,6 @@
 import './redesign-layer.css';
 import { supabase } from './supabase';
+import { currentFocus, homeSyncLabel } from './home-state';
 
 type Priority = 'low' | 'medium' | 'high';
 type GoalStatus = 'active' | 'on-hold' | 'completed';
@@ -139,12 +140,7 @@ function progress(goal: CoreGoal) {
 }
 
 function syncLabel() {
-  const state = document.documentElement.dataset.cloudSync;
-  if (state === 'syncing') return 'Syncing';
-  if (state === 'offline') return 'Offline';
-  if (state === 'error') return 'Sync issue';
-  if (state === 'conflict') return 'Needs review';
-  return 'Synced';
+  return homeSyncLabel(document.documentElement.dataset.cloudSync);
 }
 
 function brandMark() {
@@ -190,7 +186,7 @@ function patchNavigation() {
 function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
   if (focus.items.length) {
     return focus.items.map(item => `
-      <button class="ot-focus-row ${item.done ? 'done' : ''}" type="button" data-v3-focus-toggle="${item.id}">
+      <button class="ot-focus-row ${item.done ? 'done' : ''}" type="button" aria-pressed="${item.done}" data-v3-focus-toggle="${item.id}">
         <span class="ot-check">${item.done ? '✓' : ''}</span>
         <span>${esc(item.title)}</span>
       </button>`).join('');
@@ -212,7 +208,7 @@ function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
 function buildHome() {
   const state = readCoreState();
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
-  const focus = readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] });
+  const focus = currentFocus(readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] }));
   const goals = activeGoals(state);
   const blocks = nextBlocks(state);
   const name = (account.name || '').trim() || 'there';
@@ -241,7 +237,7 @@ function buildHome() {
           <section class="ot-command">
             <form data-v3-plan-form>
               <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="1200" placeholder="Build me a plan for…"></textarea>
+                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="Build me a plan for…"></textarea>
                 <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
               </div>
               <div class="ot-chips" aria-label="Planning shortcuts">
@@ -250,7 +246,7 @@ function buildHome() {
                 <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
               </div>
             </form>
-            <div class="ot-plan-status" data-v3-plan-status hidden></div>
+            <div class="ot-plan-status" data-v3-plan-status role="status" aria-live="polite" hidden></div>
           </section>
         </section>
 
@@ -312,12 +308,21 @@ function refreshHomeIdentity() {
   if (heading && heading.textContent !== next) heading.textContent = next;
 }
 
-function patchHome() {
+function patchHome(refresh = false) {
   patchNavigation();
   const workspace = document.querySelector<HTMLElement>('.workspace');
   if (!workspace) return;
   if (workspace.querySelector('[data-ontrack-v3-home]')) {
     refreshHomeIdentity();
+    if (refresh) {
+      const template = document.createElement('template');
+      template.innerHTML = buildHome();
+      const current = workspace.querySelector('.ot-life');
+      const next = template.content.querySelector('.ot-life');
+      if (current && next) current.replaceWith(next);
+      const date = workspace.querySelector('.ot-date');
+      if (date) date.textContent = todayLabel();
+    }
     return;
   }
   if (!workspace.querySelector('.hero') || !workspace.querySelector('.overview-grid')) return;
@@ -334,13 +339,13 @@ function updateSyncBadge() {
 }
 
 function toggleFocus(id: string) {
-  const focus = readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] });
+  const focus = currentFocus(readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] }));
   const item = focus.items.find(candidate => candidate.id === id);
   if (!item) return;
   item.done = !item.done;
   writeJson(FOCUS_KEY, focus);
-  const workspace = document.querySelector<HTMLElement>('.workspace');
-  if (workspace?.querySelector('[data-ontrack-v3-home]')) workspace.innerHTML = buildHome();
+  patchHome(true);
+  document.querySelector<HTMLButtonElement>(`[data-v3-focus-toggle="${CSS.escape(id)}"]`)?.focus();
 }
 
 function windowFor(preferred: AiPlan['schedule']['preferred_time']) {
@@ -406,14 +411,23 @@ async function requestPlan(intent: string) {
   const token = data.session?.access_token;
   if (!token) throw new Error('Please sign in again before using the planner.');
 
-  const response = await fetch('/api/ontrack-plan', {
+  let response: Response;
+  try {
+    response = await fetch('/api/ontrack-plan', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ intent, context: planContext() }),
-  });
+      signal: AbortSignal.timeout(45_000),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error('Planning took too long. Your draft is safe; please try again.');
+    }
+    throw new Error('Could not reach the planner. Check your connection and try again.');
+  }
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -430,6 +444,7 @@ function openPlans() {
   const state = readCoreState();
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plans-dialog';
+  dialog.setAttribute('aria-label', 'Your plans');
   dialog.innerHTML = `
     <div class="ot-plans-panel">
       <header>
@@ -437,6 +452,7 @@ function openPlans() {
         <button type="button" data-v3-plans-close aria-label="Close">×</button>
       </header>
       <div class="ot-plans-list">
+        <button type="button" class="ot-plan-row" data-action="new-goal">+ Create a plan</button>
         ${state.goals.map(goal => `
           <button type="button" class="ot-plan-row" data-action="edit-goal" data-id="${goal.id}">
             <span class="ot-plan-status-dot ${goal.status}"></span>
@@ -448,7 +464,7 @@ function openPlans() {
   document.body.append(dialog);
   dialog.querySelector('[data-v3-plans-close]')?.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => {
-    const button = (event.target as HTMLElement).closest('[data-action="edit-goal"]');
+    const button = (event.target as HTMLElement).closest('[data-action="edit-goal"],[data-action="new-goal"]');
     if (button) queueMicrotask(() => dialog.close());
   });
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
@@ -461,6 +477,7 @@ function previewPlan(plan: AiPlan, sourceText: string) {
   const slots = suggestedSlots(plan, state);
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plan-dialog';
+  dialog.setAttribute('aria-label', 'Plan preview');
   dialog.innerHTML = `
     <div class="ot-plan-panel">
       <header>
@@ -474,7 +491,8 @@ function previewPlan(plan: AiPlan, sourceText: string) {
       </div>
       <section><h3>Actions</h3><div class="ot-plan-tasks">${plan.tasks.map(task => `<div><span>○</span>${esc(task.title)}</div>`).join('')}</div></section>
       <section><h3>Suggested space</h3>
-        ${slots.length ? `<div class="ot-slot-list">${slots.map(slot => `<div><b>${dayName(slot.day)}</b><span>${timeLabel(slot.start)}</span><em>${slot.duration}h</em></div>`).join('')}</div>` : '<p class="ot-empty">No recurring time requested. ONTRACK will add the plan without calendar blocks.</p>'}
+        ${slots.length ? `<div class="ot-slot-list">${slots.map(slot => `<div><b>${dayName(slot.day)}</b><span>${timeLabel(slot.start)}</span><em>${slot.duration}h</em></div>`).join('')}</div>` : `<p class="ot-empty">${plan.schedule.sessions_per_week ? 'No free slots were found. The plan can be added without calendar blocks.' : 'No recurring time requested. ONTRACK will add the plan without calendar blocks.'}</p>`}
+        ${slots.length > 0 && slots.length < plan.schedule.sessions_per_week ? `<p class="ot-empty">Only ${slots.length} of ${plan.schedule.sessions_per_week} requested sessions fit. Review your week before adding more.</p>` : ''}
       </section>
       ${plan.assumptions.length ? `<section class="ot-assumptions"><h3>Assumptions</h3><p>${plan.assumptions.map(esc).join(' · ')}</p></section>` : ''}
       <footer>
@@ -551,6 +569,9 @@ async function submitPlan(form: HTMLFormElement) {
   status.hidden = false;
   status.textContent = 'Understanding your plan…';
   form.classList.add('busy');
+  form.setAttribute('aria-busy', 'true');
+  const submit = form.querySelector<HTMLButtonElement>('[type="submit"]');
+  if (submit) submit.disabled = true;
   openPlanningStage();
 
   const timer = window.setTimeout(() => {
@@ -570,6 +591,8 @@ async function submitPlan(form: HTMLFormElement) {
   } finally {
     planning = false;
     form.classList.remove('busy');
+    form.removeAttribute('aria-busy');
+    if (submit) submit.disabled = false;
   }
 }
 
@@ -638,7 +661,12 @@ const observer = new MutationObserver(() => {
 });
 observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-cloud-sync'] });
 
-window.addEventListener('ontrack:unified-state', patchHome);
+window.addEventListener('ontrack:unified-state', () => patchHome(true));
+window.addEventListener('ontrack:local-state', () => patchHome(true));
+window.addEventListener('focus', () => patchHome(true));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) patchHome(true);
+});
 requestAnimationFrame(() => {
   patchHome();
   bindLiquidDock();

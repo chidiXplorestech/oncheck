@@ -183,6 +183,11 @@ button,input,textarea,select{font:inherit}
   outline:none!important;
 }
 .ot-command textarea::placeholder{color:#9a9a93}
+.ot-prompt-field:focus-within{outline:3px solid #174cc9;outline-offset:3px}
+.ot-home button:focus-visible,.sidebar button:focus-visible,
+.ot-plan-dialog button:focus-visible,.ot-plans-dialog button:focus-visible{
+  outline:3px solid #174cc9!important;outline-offset:3px;
+}
 .ot-plan-button{
   width:46px;
   min-width:46px;

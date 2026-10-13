@@ -91,6 +91,7 @@ function readJson<T>(key: string, fallback: T): T {
 
 function writeJson(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value));
+  window.dispatchEvent(new CustomEvent('ontrack:local-state', { detail: { key } }));
 }
 
 function escapeHtml(value: string) {
