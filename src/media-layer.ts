@@ -278,10 +278,13 @@ function applyGoalCovers() {
     if (!goalId) continue;
     const mediaId = coverMap[goalId];
     const record = mediaCache.find(item => item.id === mediaId && item.type.startsWith('image/'));
+    const currentImage = button.querySelector<HTMLImageElement>(':scope > img[data-db-cover]');
+    if (record && currentImage?.dataset.dbCoverId === record.id && currentImage.src === mediaUrl(record)) continue;
     button.querySelectorAll(':scope > img[data-db-cover]').forEach(node => node.remove());
     if (!record) continue;
     const image = createPreview(record, 'db-cover-image');
     image.dataset.dbCover = '1';
+    image.dataset.dbCoverId = record.id;
     const label = button.querySelector(':scope > em');
     if (label) button.insertBefore(image, label);
     else button.prepend(image);
