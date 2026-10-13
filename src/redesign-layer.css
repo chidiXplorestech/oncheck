@@ -171,6 +171,23 @@ input[type=checkbox],input[type=radio]{min-height:0;padding:0;accent-color:#6a72
 /* Vault, media sheets and training share the identity. */
 .media-item,.media-add,.db-media-item,.mobile-media-panel,.mobile-media-option{background:var(--ot-surface)!important;border-color:var(--ot-line)!important;color:var(--ot-ink)!important;border-radius:18px!important;box-shadow:none!important}.media-add{color:var(--ot-muted)!important}.db-media-meta{background:#fffef9!important;border-color:var(--ot-line)!important;color:var(--ot-ink)!important}.db-media-meta strong{color:var(--ot-ink)!important}.db-media-meta small{color:var(--ot-muted)!important}.mobile-media-head span,.mobile-media-head p{color:var(--ot-muted)!important;opacity:1}.mobile-media-close{color:var(--ot-ink)!important;border-color:var(--ot-line)!important}.media-toast,.system-toast,.calendar-toast{background:var(--ot-dark)!important;color:#faf9f1!important;font-size:12px!important}
 .training-space{background:var(--ot-surface)!important;color:var(--ot-ink)!important;border-color:var(--ot-line)!important;border-radius:20px!important}.training-head h2{font-weight:550!important;letter-spacing:-.05em}.training-head p,.training-kicker,.training-note p,.training-note strong{color:var(--ot-muted)!important}.training-day,.exercise-row,.training-note{background:#f1f3e8!important;border-color:#dcdfcf!important;color:var(--ot-ink)!important}.training-day.active{background:#e0e8c6!important;border-color:#b9c69a!important}.training-day span,.training-day em,.exercise-row span,.exercise-row small{color:var(--ot-muted)!important}.workout-check{background:transparent!important;border-color:#a9b295!important}.exercise-row.done .workout-check{background:#d0dcad!important;color:var(--ot-ink)!important}.training-visual-banner{border-color:#3d4233!important;border-radius:16px!important;box-shadow:none!important}.training-visual-copy span{color:var(--ot-accent)!important}.training-visual-copy strong{font-family:inherit;letter-spacing:-.04em;font-weight:550}.training-visual-athlete{display:none}
+.training-head{background-image:none}
+.training-week-score strong{color:var(--ot-ink)!important;font-family:inherit;font-size:28px}
+.training-week-score span,.training-session-head span,.training-note span{color:var(--ot-muted)!important}
+.training-session-head h3,.exercise-copy strong{color:var(--ot-ink)!important}
+.exercise-copy strong{font-size:15px!important;line-height:1.45;font-weight:600}
+.exercise-copy span{color:#596542!important;font-size:12px!important;line-height:1.5}
+.exercise-copy small{font-size:12px!important;line-height:1.6}
+.exercise-group-label,.exercise-group-label em{color:var(--ot-muted)!important;font-size:11px}
+.exercise-row.done,.explosive-slot.done{opacity:1}
+.explosive-slot{background:#edf1e1!important;border-color:#d6ddc5!important;border-radius:14px}
+.explosive-slot strong{color:var(--ot-ink)!important;font-size:15px!important}
+.explosive-slot span{color:#77663d!important}.explosive-slot small{color:var(--ot-muted)!important;font-size:12px!important}
+.workout-add{background:#edf0e3!important;color:var(--ot-ink)!important;border-color:#cdd5bb!important;border-radius:12px;font-size:13px;font-family:inherit}
+.training-note p{font-size:12px!important;line-height:1.6}
+.workout-modal{color:var(--ot-ink)!important}.workout-modal-panel{background:var(--ot-surface)!important;border-color:var(--ot-line)!important;border-radius:20px}
+.workout-modal-head span,.workout-modal label{color:var(--ot-muted)!important;font-size:12px;letter-spacing:0;font-family:inherit}
+.explosive-picker button{background:#edf0e3!important;color:var(--ot-ink)!important;border-color:#d3dbc2!important;border-radius:12px}
 /* Sheets */
 .modal,.system-dialog,.focus-dialog,.ot-plan-dialog,.ot-plans-dialog{width:min(860px,calc(100vw - 48px));height:auto;max-width:860px;max-height:88dvh;margin:auto;padding:0;background:var(--ot-surface)!important;color:var(--ot-ink)!important;border:1px solid var(--ot-line)!important;border-radius:24px!important;box-shadow:0 26px 90px #23241f22!important;overflow:auto}
 .modal{padding:28px;max-width:600px}.modal h2{font-size:25px;font-weight:550}.modal label{font-size:12px;color:var(--ot-muted)}
@@ -197,6 +214,7 @@ input[type=checkbox],input[type=radio]{min-height:0;padding:0;accent-color:#6a72
   .modal,.system-dialog,.focus-dialog,.ot-plan-dialog,.ot-plans-dialog{width:calc(100vw - 24px)!important;max-height:calc(100dvh - 32px)!important;border-radius:22px!important}.system-panel{max-height:calc(100dvh - 32px)}.ot-plan-panel,.ot-plans-panel{padding:25px 22px;gap:22px}.ot-plan-panel header h2,.ot-plans-panel header h2{font-size:28px}.ot-slot-list{grid-template-columns:1fr 1fr}.ot-plan-panel footer{position:sticky;bottom:-25px;justify-content:stretch;background:var(--ot-surface);padding:14px 0 max(14px,env(safe-area-inset-bottom));gap:9px}.ot-plan-panel footer>button{flex:1;padding-inline:12px}.focus-meta{flex-direction:column;align-items:flex-start!important;font-size:12px!important}
   .auth-stage{display:flex;justify-content:center;padding:26px 22px;min-height:100dvh}.auth-atmosphere{display:none}.auth-card{padding:16px 0!important;max-width:450px}.auth-brand{margin-bottom:58px}.auth-heading h1{font-size:38px}.auth-actions{flex-direction:row!important;gap:14px}
   .ot-calendar-hint{display:block}
+  .training-week-score{margin-top:0!important;align-self:flex-start!important;display:flex;align-items:center;gap:10px;background:#edf1e1;padding:10px 14px;border-radius:12px}
   .ot-command textarea,.editor-card input,.editor-card select,.editor-card textarea,.task-row input,input,select,textarea{font-size:16px!important}
   .mobile-install{bottom:calc(96px + env(safe-area-inset-bottom))!important;background:var(--ot-dark)!important;color:#faf9f1!important}.system-toast,.calendar-toast,.media-toast{bottom:calc(96px + env(safe-area-inset-bottom))!important}
 }

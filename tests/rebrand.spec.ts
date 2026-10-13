@@ -45,5 +45,8 @@ test('Training remains available from the redesigned plan collection', async ({ 
   await page.locator('[data-v3-all-plans]').click();
   await page.locator('[data-plan-card][data-id="training"]').click();
   await expect(page.locator('.training-space')).toBeVisible();
+  await page.locator('.training-visual-banner').scrollIntoViewIfNeeded();
+  await expect(page.locator('.training-visual-banner img')).toHaveJSProperty('complete', true);
+  expect(await page.locator('.training-visual-banner img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   await page.locator('.training-space').screenshot({ path: testInfo.outputPath('training-phone.png') });
 });
