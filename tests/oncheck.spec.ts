@@ -7,7 +7,7 @@ const onePixelPng = Buffer.from(
 
 async function openGoal(page: import('@playwright/test').Page, id: string) {
   await page.locator('[data-v3-all-plans]').click();
-  await page.locator(`.ot-plans-dialog [data-action="edit-goal"][data-id="${id}"]`).click();
+  await page.locator(`.ot-plans-page [data-action="edit-goal"][data-id="${id}"]`).click();
 }
 
 test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) => {
@@ -17,18 +17,19 @@ test('desktop uses the focused ONTRACK v3 home composition', async ({ page }) =>
   const dock = page.locator('.sidebar');
   const dockBox = await dock.boundingBox();
   expect(dockBox).not.toBeNull();
-  expect(dockBox!.y).toBeGreaterThan(800);
-  expect(dockBox!.height).toBeLessThan(70);
-  expect(dockBox!.x).toBeGreaterThan(300);
-  expect(dockBox!.x + dockBox!.width).toBeLessThan(1140);
+  expect(dockBox!.y).toBe(0);
+  expect(dockBox!.height).toBe(900);
+  expect(dockBox!.x).toBe(0);
+  expect(dockBox!.width).toBeGreaterThanOrEqual(200);
+  expect(dockBox!.width).toBeLessThanOrEqual(240);
   await expect(dock).toHaveCSS('position', 'fixed');
 
   await expect(page.locator('.ot-home')).toBeVisible();
   await expect(page.locator('.ot-command')).toBeVisible();
   await expect(page.locator('.hero')).toHaveCount(0);
-  await expect(page.locator('.ot-intro h1')).toContainText('What do you want');
-  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(4);
-  await expect(page.locator('.oncheck-system-nav')).toBeHidden();
+  await expect(page.locator('.ot-life-heading h1')).toContainText('A little progress.');
+  await expect(page.locator('.sidebar .nav-btn:visible')).toHaveCount(5);
+  await expect(page.locator('.oncheck-system-nav')).toBeVisible();
 });
 
 test('Save Changes persists a goal through navigation and reload', async ({ page }) => {
@@ -86,6 +87,7 @@ test('Today Focus remains functional from the new Today surface', async ({ page 
 test('AI planning composer is visible without masquerading as a chatbot', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('[data-v3-plan-input]')).toBeVisible();
+  await page.locator('.ot-shortcuts summary').click();
   await page.locator('[data-v3-prompt]').first().click();
   await expect(page.locator('[data-v3-plan-input]')).not.toHaveValue('');
 });
@@ -119,7 +121,7 @@ test('phone landscape keeps the floating dock contained and does not overflow th
   const sidebarBox = await page.locator('.sidebar').boundingBox();
   expect(sidebarBox).not.toBeNull();
   expect(sidebarBox!.y).toBeGreaterThan(300);
-  expect(sidebarBox!.height).toBeLessThan(70);
+  expect(sidebarBox!.height).toBeLessThanOrEqual(72);
   expect(sidebarBox!.x).toBeGreaterThanOrEqual(0);
   expect(sidebarBox!.x + sidebarBox!.width).toBeLessThanOrEqual(844);
 

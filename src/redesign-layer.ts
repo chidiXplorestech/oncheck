@@ -1,5 +1,7 @@
-import './redesign-layer.css';
 import { supabase } from './supabase';
+import { currentFocus, homeSyncLabel } from './home-state';
+import { trackMark, navIcon } from './identity';
+import { MAX_PLAN_INPUT, parseStructuredPlans, importDraft, validPlan, type PlannerPlan, type PlannerResult } from '../shared/planning-input.mjs';
 
 type Priority = 'low' | 'medium' | 'high';
 type GoalStatus = 'active' | 'on-hold' | 'completed';
@@ -29,21 +31,7 @@ type CoreBlock = {
 type CoreState = { goals: CoreGoal[]; blocks: CoreBlock[]; media: string[] };
 type DailyFocus = { date: string; lowEnergy: boolean; items: Array<{ id: string; title: string; done: boolean }> };
 type AccountPrefs = { name?: string; role?: string; email?: string; maxDailyPriorities?: number; lowEnergyMinutes?: number };
-type AiPlan = {
-  title: string;
-  summary: string;
-  category: string;
-  priority: Priority;
-  cadence: string;
-  target_date: string | null;
-  tasks: Array<{ title: string }>;
-  schedule: {
-    sessions_per_week: number;
-    duration_minutes: number;
-    preferred_time: 'morning' | 'afternoon' | 'evening' | 'any';
-  };
-  assumptions: string[];
-};
+type AiPlan = PlannerPlan;
 
 const CORE_KEY = 'oncheck-state-v1';
 const FOCUS_KEY = 'oncheck-daily-focus-v2';
@@ -139,27 +127,16 @@ function progress(goal: CoreGoal) {
 }
 
 function syncLabel() {
-  const state = document.documentElement.dataset.cloudSync;
-  if (state === 'syncing') return 'Syncing';
-  if (state === 'offline') return 'Offline';
-  if (state === 'error') return 'Sync issue';
-  if (state === 'conflict') return 'Needs review';
-  return 'Synced';
+  return homeSyncLabel(document.documentElement.dataset.cloudSync);
 }
 
-function brandMark() {
-  return `
-    <svg viewBox="0 0 36 36" aria-hidden="true">
-      <circle cx="18" cy="18" r="11.4" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="52 20" stroke-linecap="round"/>
-      <path d="M10.5 22.6 24.8 8.3m-6.1.3h6.4V15" fill="none" stroke="var(--ot-lime)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-}
+function brandMark() { return trackMark(); }
 
 function patchNavigation() {
   const brand = document.querySelector<HTMLElement>('.brand');
   if (brand && brand.dataset.v3 !== '1') {
     brand.dataset.v3 = '1';
-    brand.innerHTML = `<span class="ot-brand-mark">${brandMark()}</span><span>ONTRACK</span>`;
+    brand.innerHTML = `<span class="ot-brand-mark">${brandMark()}</span><span class="ontrack-wordmark">ontrack.</span>`;
   }
 
   const labels: Record<string, string> = {
@@ -171,26 +148,88 @@ function patchNavigation() {
   document.querySelectorAll<HTMLElement>('.nav-btn[data-nav]').forEach(button => {
     const key = button.dataset.nav ?? '';
     if (!labels[key] || button.dataset.v3Nav === '1') return;
-    const icon = button.querySelector('span')?.outerHTML ?? '';
+    const icon = `<span class="ot-nav-icon">${navIcon(key)}</span>`;
     button.innerHTML = `${icon}<span class="ot-nav-label">${labels[key]}</span>`;
     button.dataset.v3Nav = '1';
+    button.setAttribute('aria-label', labels[key]);
   });
 
   const settings = document.querySelector<HTMLElement>('.oncheck-system-nav');
   if (settings && settings.dataset.v3Nav !== '1') {
-    const icon = settings.querySelector('span')?.outerHTML ?? '<span>⌁</span>';
+    const icon = `<span class="ot-nav-icon">${navIcon('settings')}</span>`;
     settings.innerHTML = `${icon}<span class="ot-nav-label">Settings</span>`;
     settings.dataset.v3Nav = '1';
   }
 
   const quote = document.querySelector<HTMLElement>('.side-quote');
   if (quote) quote.remove();
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar && !sidebar.querySelector('.ot-rail-note')) {
+    const note = document.createElement('div');
+    note.className = 'ot-rail-note';
+    note.innerHTML = '<span>AT YOUR PACE</span><p>Make room for<br>what matters.</p><i></i><small>One day. One next step.</small>';
+    sidebar.append(note);
+  }
+}
+
+function screenHeader(label: string) {
+  return `<header class="ot-topbar ot-screen-bar"><button type="button" class="ot-wordmark" data-v3-nav-target="overview" aria-label="ONTRACK home"><span class="ot-wordmark-mark">${brandMark()}</span><span class="ontrack-wordmark">ontrack.</span></button><span class="ot-page-context">Your workspace <i>/</i> ${label}</span><div class="ot-topbar-actions"><button class="ot-tour-button" type="button" data-v3-tour>Quick tour</button><button class="ot-account-button" type="button" data-system-settings="1" aria-label="Open account settings">${navIcon('settings')}<span>Account</span></button></div></header>`;
+}
+
+function patchScreenChrome() {
+  const workspace = document.querySelector<HTMLElement>('.workspace');
+  if (!workspace || workspace.querySelector('.ot-home,.ot-plans-page,.ot-screen-bar')) return;
+  const calendar = workspace.querySelector('.calendar-shell');
+  if (calendar && !calendar.closest('.ot-calendar-scroll')) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ot-calendar-scroll';
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', 'Weekly calendar, scroll horizontally to view every day');
+    wrapper.tabIndex = 0;
+    calendar.before(wrapper);
+    wrapper.append(calendar);
+    const hint = document.createElement('p');
+    hint.className = 'ot-calendar-hint';
+    hint.textContent = 'Swipe across to see your full week.';
+    wrapper.before(hint);
+  }
+  const label = workspace.querySelector('.calendar-page') ? 'Week' : workspace.querySelector('.media-grid') ? 'Vault' : 'Plan';
+  workspace.insertAdjacentHTML('afterbegin', screenHeader(label));
+}
+
+function showPlansPage() {
+  const workspace = document.querySelector<HTMLElement>('.workspace');
+  if (!workspace) return;
+  const state = readCoreState();
+  workspace.innerHTML = `<div class="ot-plans-page">${screenHeader('Plans')}<div class="ot-collection">
+    <div class="ot-collection-head"><div><p class="ot-eyebrow">THE BIGGER PICTURE</p><h1>Your plans.<br><span>Your own pace.</span></h1><p>A place for what you’re working towards.</p></div><button type="button" class="primary" data-action="new-goal">+ New plan</button></div>
+    <div class="ot-plan-tools"><label class="ot-search">${navIcon('search')}<input type="search" aria-label="Search plans" placeholder="Find a plan…" data-plan-search></label><div class="ot-plan-filters" aria-label="Filter plans"><button type="button" class="active" data-plan-filter="all" aria-pressed="true">All plans</button><button type="button" data-plan-filter="active" aria-pressed="false">Active</button><button type="button" data-plan-filter="on-hold" aria-pressed="false">On hold</button><button type="button" data-plan-filter="completed" aria-pressed="false">Completed</button></div></div>
+    <div class="ot-plan-collection">${state.goals.map((goal, index) => `<button type="button" class="ot-collection-card" data-action="edit-goal" data-id="${goal.id}" data-plan-card data-plan-title="${esc(goal.title.toLowerCase())}" data-plan-status="${goal.status}" style="--card-tone:${index % 3}"><span class="ot-card-symbol">${navIcon('goals')}</span><span class="ot-card-category">${esc(goal.category)}</span><h2>${esc(goal.title)}</h2><p>${esc(goal.tasks.find(task => !task.done)?.title || 'Take a moment to review your next step.')}</p><div class="ot-card-footer"><span>${goal.status.replace('-', ' ')}</span><b>${progress(goal)}% <span aria-hidden="true">↗</span></b></div><i style="--p:${progress(goal)}%"></i></button>`).join('')}</div>
+    <div class="ot-collection-empty" ${state.goals.length ? 'hidden' : ''}><h2>A little room for possibility.</h2><p>Start with one thing you want to make happen.</p><button type="button" class="primary" data-action="new-goal">Create your first plan</button></div>
+    <p class="ot-no-matches" hidden>No plans match. Try another search or filter.</p>
+  </div></div>`;
+  document.querySelectorAll<HTMLElement>('.sidebar [data-nav]').forEach(button => button.classList.toggle('active', button.dataset.nav === 'goals'));
+  patchNavigation();
+}
+
+function filterPlans() {
+  const page = document.querySelector('.ot-plans-page');
+  if (!page) return;
+  const term = page.querySelector<HTMLInputElement>('[data-plan-search]')?.value.trim().toLowerCase() || '';
+  const filter = page.querySelector<HTMLElement>('[data-plan-filter].active')?.dataset.planFilter || 'all';
+  let visible = 0;
+  page.querySelectorAll<HTMLElement>('[data-plan-card]').forEach(card => {
+    card.hidden = !((filter === 'all' || card.dataset.planStatus === filter) && (card.dataset.planTitle || '').includes(term));
+    if (!card.hidden) visible += 1;
+  });
+  const empty = page.querySelector<HTMLElement>('.ot-no-matches');
+  if (empty) empty.hidden = visible > 0 || !readCoreState().goals.length;
 }
 
 function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
   if (focus.items.length) {
     return focus.items.map(item => `
-      <button class="ot-focus-row ${item.done ? 'done' : ''}" type="button" data-v3-focus-toggle="${item.id}">
+      <button class="ot-focus-row ${item.done ? 'done' : ''}" type="button" aria-pressed="${item.done}" data-v3-focus-toggle="${item.id}">
         <span class="ot-check">${item.done ? '✓' : ''}</span>
         <span>${esc(item.title)}</span>
       </button>`).join('');
@@ -212,7 +251,7 @@ function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
 function buildHome() {
   const state = readCoreState();
   const account = readJson<AccountPrefs>(ACCOUNT_KEY, {});
-  const focus = readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] });
+  const focus = currentFocus(readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] }));
   const goals = activeGoals(state);
   const blocks = nextBlocks(state);
   const name = (account.name || '').trim() || 'there';
@@ -223,56 +262,35 @@ function buildHome() {
       <header class="ot-topbar">
         <button class="ot-wordmark" type="button" data-v3-nav-target="overview" aria-label="ONTRACK home">
           <span class="ot-wordmark-mark">${brandMark()}</span>
-          <span>ONTRACK</span>
+          <span class="ontrack-wordmark">ontrack.</span>
         </button>
         <div class="ot-topbar-actions">
           <span class="ot-date">${todayLabel()}</span>
+          <button class="ot-tour-button" type="button" data-v3-tour>Quick tour</button>
           <button class="ot-sync" type="button" data-system-settings="1" data-v3-sync><span></span>${syncLabel()}</button>
         </div>
       </header>
 
       <main class="ot-home-main">
-        <section class="ot-intro">
-          <div class="ot-intro-mark">${brandMark()}</div>
-          <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
-          <h1>What do you want<br>to make happen?</h1>
-          <p class="ot-intro-copy">Tell ONTRACK what changed, what matters, or what you need to fit into your life.</p>
-
-          <section class="ot-command">
-            <form data-v3-plan-form>
-              <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="1200" placeholder="Build me a plan for…"></textarea>
-                <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
-              </div>
-              <div class="ot-chips" aria-label="Planning shortcuts">
-                <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
-                <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
-                <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
-              </div>
-            </form>
-            <div class="ot-plan-status" data-v3-plan-status hidden></div>
-          </section>
-        </section>
-
         <section class="ot-life">
           <div class="ot-life-heading">
-            <p>RIGHT NOW</p>
-            <h2>Your life, without the noise.</h2>
-            <span>${goals.length} active priorities · keep today to ${maxPriorities}</span>
+            <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
+            <h1>A little progress.<br><span>A better day.</span></h1>
+            <span>Make space for what matters. Keep today to ${maxPriorities} priorities.</span>
           </div>
 
           <div class="ot-life-layout">
             <section class="ot-plain-section ot-today">
               <div class="ot-section-head">
-                <div><span>TODAY</span><h3>What matters now</h3></div>
-                <button type="button" data-system-focus="1">Edit</button>
+                <div><span>TODAY’S FOCUS</span><h3>Your next moves</h3></div>
+                <button type="button" data-system-focus="1">Edit focus <span aria-hidden="true">↗</span></button>
               </div>
-              <div class="ot-focus-list">${focusRows(focus, goals)}</div>
+              <p class="ot-focus-hint">${focus.items.length ? `${focus.items.filter(item => item.done).length} of ${focus.items.length} complete · one step at a time` : 'Suggested from your plans. Choose your priorities with Edit focus.'}</p><div class="ot-focus-list">${focusRows(focus, goals)}</div><div class="ot-focus-foot"><span>Small steps count.</span><span>${String(new Date().getDate()).padStart(2, '0')} / ${String(new Date().getMonth()+1).padStart(2, '0')}</span></div>
             </section>
 
             <section class="ot-plain-section ot-up-next">
               <div class="ot-section-head">
-                <div><span>UP NEXT</span><h3>Coming up</h3></div>
+                <div><span>ON THE HORIZON</span><h3>Coming up</h3></div>
                 <button data-v3-nav-target="calendar" type="button">Week ↗</button>
               </div>
               <div class="ot-next-list">
@@ -287,20 +305,41 @@ function buildHome() {
 
             <section class="ot-plain-section ot-priorities">
               <div class="ot-section-head">
-                <div><span>PLANS</span><h3>Keep these moving</h3></div>
+                <div><span>YOUR PLANS</span><h3>Good things in motion</h3></div>
                 <button data-v3-all-plans type="button">All plans ↗</button>
               </div>
               <div class="ot-priority-list">
                 ${goals.slice(0, 3).map((goal, index) => `
                   <button class="ot-priority-row" type="button" data-action="select-goal" data-id="${goal.id}">
-                    <span class="ot-priority-index">0${index + 1}</span>
+                    <span class="ot-priority-index">${navIcon('goals')}</span>
                     <span class="ot-priority-copy"><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${esc(goal.cadence)}</small></span>
                     <span class="ot-priority-progress"><i style="--p:${progress(goal)}%"></i><em>${progress(goal)}%</em></span>
-                  </button>`).join('') || '<p class="ot-empty">No active plans. You have room to choose what is next.</p>'}
+                  </button>`).join('') || '<div class="ot-empty-state"><p>No plans yet.</p><span>Choose one thing you want to work towards.</span><button type="button" class="ot-apply" data-action="new-goal">Create your first plan</button></div>'}
               </div>
             </section>
           </div>
         </section>
+        <section class="ot-intro">
+          <h2>Make room for something new.</h2>
+          <p class="ot-intro-copy">One goal or your whole plan. Paste a list and keep every next step.</p>
+
+          <section class="ot-command">
+            <form data-v3-plan-form>
+              <div class="ot-prompt-field">
+                <textarea data-v3-plan-input rows="2" required aria-label="Describe your plan" aria-describedby="ot-plan-input-limit" placeholder="What do you want to work towards?"></textarea>
+                <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
+              </div>
+              <div class="ot-input-meta" id="ot-plan-input-limit"><span data-plan-limit-hint>Lists, dates and notes welcome.</span><span data-plan-count>0 / 25,000</span></div>
+              <details class="ot-shortcuts"><summary>Planning shortcuts</summary><div class="ot-chips" aria-label="Planning shortcuts">
+                <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
+                <button type="button" data-v3-prompt="Make next week lighter while protecting my most important work."><span>Make next week lighter</span><em>↗</em></button>
+              </div></details>
+            </form>
+            <div class="ot-plan-status" data-v3-plan-status role="status" aria-live="polite" hidden></div>
+          </section>
+        </section>
+
       </main>
     </div>`;
 }
@@ -312,12 +351,21 @@ function refreshHomeIdentity() {
   if (heading && heading.textContent !== next) heading.textContent = next;
 }
 
-function patchHome() {
+function patchHome(refresh = false) {
   patchNavigation();
   const workspace = document.querySelector<HTMLElement>('.workspace');
   if (!workspace) return;
   if (workspace.querySelector('[data-ontrack-v3-home]')) {
     refreshHomeIdentity();
+    if (refresh) {
+      const template = document.createElement('template');
+      template.innerHTML = buildHome();
+      const current = workspace.querySelector('.ot-life');
+      const next = template.content.querySelector('.ot-life');
+      if (current && next) current.replaceWith(next);
+      const date = workspace.querySelector('.ot-date');
+      if (date) date.textContent = todayLabel();
+    }
     return;
   }
   if (!workspace.querySelector('.hero') || !workspace.querySelector('.overview-grid')) return;
@@ -334,13 +382,13 @@ function updateSyncBadge() {
 }
 
 function toggleFocus(id: string) {
-  const focus = readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] });
+  const focus = currentFocus(readJson<DailyFocus>(FOCUS_KEY, { date: '', lowEnergy: false, items: [] }));
   const item = focus.items.find(candidate => candidate.id === id);
   if (!item) return;
   item.done = !item.done;
   writeJson(FOCUS_KEY, focus);
-  const workspace = document.querySelector<HTMLElement>('.workspace');
-  if (workspace?.querySelector('[data-ontrack-v3-home]')) workspace.innerHTML = buildHome();
+  patchHome(true);
+  document.querySelector<HTMLButtonElement>(`[data-v3-focus-toggle="${CSS.escape(id)}"]`)?.focus();
 }
 
 function windowFor(preferred: AiPlan['schedule']['preferred_time']) {
@@ -358,7 +406,7 @@ function hasConflict(blocks: CoreBlock[], day: number, start: number, duration: 
 function suggestedSlots(plan: AiPlan, state: CoreState) {
   const count = Math.min(7, Math.max(0, Math.round(plan.schedule.sessions_per_week)));
   if (!count) return [] as Array<{ day: number; start: number; duration: number }>;
-  const duration = Math.max(0.5, Math.min(4, plan.schedule.duration_minutes / 60));
+  const duration = Math.max(0.25, Math.min(4, plan.schedule.duration_minutes / 60));
   const [from, to] = windowFor(plan.schedule.preferred_time);
   const found: Array<{ day: number; start: number; duration: number }> = [];
   const today = mondayIndex();
@@ -402,18 +450,30 @@ function planContext() {
 }
 
 async function requestPlan(intent: string) {
+  // Authored structured plans can be imported intact, including while offline.
+  const imported = parseStructuredPlans(intent);
+  if (imported) return imported;
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error('Please sign in again before using the planner.');
 
-  const response = await fetch('/api/ontrack-plan', {
+  let response: Response;
+  try {
+    response = await fetch('/api/ontrack-plan', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ intent, context: planContext() }),
-  });
+      signal: AbortSignal.timeout(50_000),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new Error('Planning took too long. Your draft is safe; please try again.');
+    }
+    throw new Error('Could not reach the planner. Check your connection and try again.');
+  }
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -422,64 +482,52 @@ async function requestPlan(intent: string) {
     }
     throw new Error(payload?.error || 'ONTRACK could not create a plan right now.');
   }
-  return payload.plan as AiPlan;
+  const plans = payload.plans ?? (payload.plan ? [payload.plan] : []);
+  if (!Array.isArray(plans) || !plans.length || plans.length > 32 || !plans.every(validPlan)) {
+    throw new Error('The planner returned a plan that could not be reviewed. Try again or import your draft as written.');
+  }
+  return { plans, source: payload.source, notice: payload.notice } as PlannerResult;
 }
 
-function openPlans() {
-  document.querySelector<HTMLDialogElement>('.ot-plans-dialog')?.close();
-  const state = readCoreState();
-  const dialog = document.createElement('dialog');
-  dialog.className = 'ot-plans-dialog';
-  dialog.innerHTML = `
-    <div class="ot-plans-panel">
-      <header>
-        <div><span>YOUR PLANS</span><h2>Everything, without making everything urgent.</h2></div>
-        <button type="button" data-v3-plans-close aria-label="Close">×</button>
-      </header>
-      <div class="ot-plans-list">
-        ${state.goals.map(goal => `
-          <button type="button" class="ot-plan-row" data-action="edit-goal" data-id="${goal.id}">
-            <span class="ot-plan-status-dot ${goal.status}"></span>
-            <span><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${goal.status.replace('-', ' ')}</small></span>
-            <em>${progress(goal)}%</em>
-          </button>`).join('')}
-      </div>
-    </div>`;
-  document.body.append(dialog);
-  dialog.querySelector('[data-v3-plans-close]')?.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => {
-    const button = (event.target as HTMLElement).closest('[data-action="edit-goal"]');
-    if (button) queueMicrotask(() => dialog.close());
-  });
-  dialog.addEventListener('close', () => dialog.remove(), { once: true });
-  dialog.showModal();
-}
+function openPlans() { showPlansPage(); }
 
-function previewPlan(plan: AiPlan, sourceText: string) {
+function previewPlan(result: PlannerResult, sourceText: string) {
   document.querySelector<HTMLDialogElement>('.ot-plan-dialog')?.close();
   const state = readCoreState();
-  const slots = suggestedSlots(plan, state);
+  const working = structuredClone(state);
+  const previews = result.plans.map(plan => {
+    const slots = suggestedSlots(plan, working);
+    for (const slot of slots) working.blocks.push({ ...slot, id: uid(), goalId: 'preview', title: plan.title, done: false });
+    return { plan, slots };
+  });
+  const multiple = previews.length > 1;
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plan-dialog';
+  dialog.setAttribute('aria-label', 'Plan preview');
   dialog.innerHTML = `
     <div class="ot-plan-panel">
       <header>
-        <div><span>PLAN PREVIEW</span><h2>${esc(plan.title)}</h2><p>${esc(plan.summary)}</p></div>
+        <div><span>${result.source === 'structured_import' ? 'IMPORTED PLAN' : 'PLAN PREVIEW'}</span><h2>${multiple ? `${previews.length} plans. One clear view.` : esc(previews[0].plan.title)}</h2><p>${esc(result.notice || (multiple ? 'Review every plan before adding them to your workspace.' : previews[0].plan.summary))}</p></div>
         <button type="button" data-v3-close aria-label="Close">×</button>
       </header>
+      ${previews.map(({ plan, slots }, index) => `<article class="ot-preview-item" data-plan-preview-item>
+      ${multiple ? `<h2><span>${String(index + 1).padStart(2, '0')}</span>${esc(plan.title)}</h2><p class="ot-preview-summary">${esc(plan.summary)}</p>` : ''}
       <div class="ot-plan-meta">
         <span>${esc(plan.priority)} priority</span>
         <span>${esc(plan.cadence)}</span>
         ${plan.target_date ? `<span>Target ${esc(plan.target_date)}</span>` : ''}
       </div>
-      <section><h3>Actions</h3><div class="ot-plan-tasks">${plan.tasks.map(task => `<div><span>○</span>${esc(task.title)}</div>`).join('')}</div></section>
+      <section><h3>${plan.tasks.length ? `${plan.tasks.length} actions` : 'Reference notes'}</h3><div class="ot-plan-tasks">${plan.tasks.map(task => `<div><span>○</span>${esc(task.title)}</div>`).join('')}</div></section>
+      ${plan.notes ? `<details class="ot-source-notes" ${plan.tasks.length ? '' : 'open'}><summary>Original notes · kept in full</summary><pre>${esc(plan.notes)}</pre></details>` : ''}
       <section><h3>Suggested space</h3>
-        ${slots.length ? `<div class="ot-slot-list">${slots.map(slot => `<div><b>${dayName(slot.day)}</b><span>${timeLabel(slot.start)}</span><em>${slot.duration}h</em></div>`).join('')}</div>` : '<p class="ot-empty">No recurring time requested. ONTRACK will add the plan without calendar blocks.</p>'}
+        ${slots.length ? `<div class="ot-slot-list">${slots.map(slot => `<div><b>${dayName(slot.day)}</b><span>${timeLabel(slot.start)}</span><em>${slot.duration}h</em></div>`).join('')}</div>` : `<p class="ot-empty">${plan.schedule.sessions_per_week ? 'No free slots were found. The plan can be added without calendar blocks.' : 'No recurring time requested. ONTRACK will add the plan without calendar blocks.'}</p>`}
+        ${slots.length > 0 && slots.length < plan.schedule.sessions_per_week ? `<p class="ot-empty">Only ${slots.length} of ${plan.schedule.sessions_per_week} requested sessions fit. Review your week before adding more.</p>` : ''}
       </section>
       ${plan.assumptions.length ? `<section class="ot-assumptions"><h3>Assumptions</h3><p>${plan.assumptions.map(esc).join(' · ')}</p></section>` : ''}
+      </article>`).join('')}
       <footer>
-        <button type="button" class="ot-secondary" data-v3-close>Adjust later</button>
-        <button type="button" class="ot-apply" data-v3-apply>Apply to ONTRACK</button>
+        <button type="button" class="ot-secondary" data-v3-close>Back to draft</button>
+        <button type="button" class="ot-apply" data-v3-apply>${multiple ? `Add ${previews.length} plans` : 'Apply to ONTRACK'}</button>
       </footer>
     </div>`;
   document.body.append(dialog);
@@ -487,10 +535,14 @@ function previewPlan(plan: AiPlan, sourceText: string) {
 
   const close = () => dialog.close();
   dialog.querySelectorAll('[data-v3-close]').forEach(button => button.addEventListener('click', close));
-  dialog.querySelector('[data-v3-apply]')?.addEventListener('click', () => {
+  let applied = false;
+  dialog.querySelector<HTMLButtonElement>('[data-v3-apply]')?.addEventListener('click', event => {
+    if (applied) return;
+    const applyButton = event.currentTarget as HTMLButtonElement;
     const current = readCoreState();
+    for (const [index, { plan, slots }] of previews.entries()) {
     const goalId = `ai-${uid()}`;
-    current.goals.unshift({
+    current.goals.splice(index, 0, {
       id: goalId,
       title: plan.title,
       category: plan.category || 'Personal',
@@ -498,7 +550,7 @@ function previewPlan(plan: AiPlan, sourceText: string) {
       priority: plan.priority,
       cadence: plan.cadence || 'Weekly',
       targetDate: plan.target_date ?? '',
-      notes: `${plan.summary}\n\nCreated from: ${sourceText}`,
+      notes: plan.notes || `${plan.summary}\n\nCreated from: ${sourceText}`,
       tasks: plan.tasks.map(task => ({ id: uid(), title: task.title, done: false })),
     });
     for (const slot of slots) {
@@ -512,12 +564,57 @@ function previewPlan(plan: AiPlan, sourceText: string) {
         done: false,
       });
     }
-    writeJson(CORE_KEY, current);
+    }
+    try {
+      writeJson(CORE_KEY, current);
+    } catch {
+      applyButton.textContent = 'Could not save. Try again';
+      return;
+    }
+    applied = true;
+    applyButton.disabled = true;
+    // The live core state also needs the saved batch before any later UI save.
+    const runtime = (window as unknown as { __ONTRACK_CORE_STATE__?: CoreState }).__ONTRACK_CORE_STATE__;
+    if (runtime) Object.assign(runtime, current);
     dialog.close();
-    patchHome();
-    window.setTimeout(() => location.reload(), 350);
+    const homeButton = document.querySelector<HTMLButtonElement>('.sidebar [data-nav="overview"]');
+    if (homeButton) homeButton.click();
+    else patchHome(true);
   });
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
+}
+
+function openTour() {
+  document.querySelector<HTMLDialogElement>('.ot-tour-dialog')?.close();
+  const steps = [
+    { title: 'Choose what matters today', copy: 'Keep a short focus list. Tick off an action when it is finished.', demo: '<span class="ot-demo-label">TODAY</span><p>○ Review lecture notes</p><p>✓ Finish one coding exercise</p>' },
+    { title: 'Give your goals space', copy: 'Use Plans for your next actions and Week to choose when to work on them.', demo: '<span class="ot-demo-label">YOUR WEEK</span><p>Tuesday · 10:00</p><strong>Study block · 45 minutes</strong>' },
+    { title: 'Make changes at your pace', copy: 'Describe a new goal in the planner. Check its actions and suggested times before applying it.', demo: '<span class="ot-demo-label">PLAN PREVIEW</span><p>Prepare for my next deadline</p><strong>Review actions → Apply when ready</strong>' },
+  ];
+  const dialog = document.createElement('dialog');
+  dialog.className = 'ot-plan-dialog ot-tour-dialog';
+  dialog.setAttribute('aria-label', 'How ONTRACK works');
+  let step = 0;
+  const render = () => {
+    const current = steps[step];
+    dialog.innerHTML = `<div class="ot-plan-panel ot-tour-panel">
+      <header><div><span>QUICK TOUR · ${step + 1} OF ${steps.length}</span><h2>${current.title}</h2><p>${current.copy}</p></div><button type="button" data-tour-skip aria-label="Close tour">×</button></header>
+      <div class="ot-tour-demo" aria-label="Illustrative example">${current.demo}</div>
+      <p class="ot-tour-note">Example shown for illustration.</p>
+      <footer><button type="button" class="ot-secondary" data-tour-skip>Skip tour</button><button type="button" class="ot-apply" data-tour-next>${step === steps.length - 1 ? 'Start my day' : 'Continue'}</button></footer>
+    </div>`;
+    dialog.querySelectorAll('[data-tour-skip]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    dialog.querySelector('[data-tour-next]')?.addEventListener('click', () => {
+      if (step === steps.length - 1) { dialog.close(); return; }
+      step += 1;
+      render();
+      dialog.querySelector<HTMLButtonElement>('[data-tour-next]')?.focus();
+    });
+  };
+  render();
+  document.body.append(dialog);
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.showModal();
 }
 
 function openPlanningStage() {
@@ -546,11 +643,15 @@ async function submitPlan(form: HTMLFormElement) {
   const status = document.querySelector<HTMLElement>('[data-v3-plan-status]');
   const intent = input?.value.trim() ?? '';
   if (!intent || !status) return;
+  if (intent.length > MAX_PLAN_INPUT) { status.hidden = false; status.textContent = 'Split this draft into parts of up to 25,000 characters.'; return; }
 
   planning = true;
   status.hidden = false;
   status.textContent = 'Understanding your plan…';
   form.classList.add('busy');
+  form.setAttribute('aria-busy', 'true');
+  const submit = form.querySelector<HTMLButtonElement>('[type="submit"]');
+  if (submit) submit.disabled = true;
   openPlanningStage();
 
   const timer = window.setTimeout(() => {
@@ -566,16 +667,33 @@ async function submitPlan(form: HTMLFormElement) {
   } catch (error) {
     window.clearTimeout(timer);
     closePlanningStage();
-    status.textContent = error instanceof Error ? error.message : 'ONTRACK could not create the plan.';
+    status.replaceChildren(document.createTextNode(error instanceof Error ? error.message : 'ONTRACK could not create the plan.'));
+    const fallback = document.createElement('button');
+    fallback.type = 'button';
+    fallback.className = 'ot-secondary ot-import-draft';
+    fallback.textContent = 'Import my draft as written';
+    fallback.addEventListener('click', () => {
+      const draft = input?.value.trim() || intent;
+      if (draft.length > MAX_PLAN_INPUT) { status.textContent = 'Split this draft into parts of up to 25,000 characters. Your full text is still in the field.'; return; }
+      previewPlan(importDraft(draft), draft);
+    });
+    status.append(fallback);
   } finally {
     planning = false;
     form.classList.remove('busy');
+    form.removeAttribute('aria-busy');
+    if (submit) submit.disabled = false;
   }
 }
 
 document.addEventListener('click', event => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans],[data-v3-nav-target]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-v3-prompt],[data-v3-focus-toggle],[data-v3-all-plans],[data-v3-nav-target],[data-v3-tour]');
   if (!target) return;
+
+  if (target.hasAttribute('data-v3-tour')) {
+    openTour();
+    return;
+  }
 
   if (target.hasAttribute('data-v3-all-plans')) {
     openPlans();
@@ -591,6 +709,7 @@ document.addEventListener('click', event => {
     const input = document.querySelector<HTMLTextAreaElement>('[data-v3-plan-input]');
     if (input) {
       input.value = target.dataset.v3Prompt;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       input.focus();
     }
     return;
@@ -633,13 +752,50 @@ function bindLiquidDock() {
 
 const observer = new MutationObserver(() => {
   patchHome();
+  patchScreenChrome();
   updateSyncBadge();
   bindLiquidDock();
 });
 observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-cloud-sync'] });
 
-window.addEventListener('ontrack:unified-state', patchHome);
+window.addEventListener('ontrack:unified-state', () => patchHome(true));
+window.addEventListener('ontrack:local-state', () => patchHome(true));
+window.addEventListener('focus', () => patchHome(true));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) patchHome(true);
+});
 requestAnimationFrame(() => {
   patchHome();
+  patchScreenChrome();
   bindLiquidDock();
+});
+
+document.addEventListener('click', event => {
+  const target = (event.target as HTMLElement).closest<HTMLElement>('.sidebar [data-nav="goals"],[data-plan-filter]');
+  if (!target) return;
+  if (target.hasAttribute('data-nav')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showPlansPage();
+  } else {
+    document.querySelectorAll<HTMLElement>('[data-plan-filter]').forEach(button => {
+      button.classList.toggle('active', button === target);
+      button.setAttribute('aria-pressed', String(button === target));
+    });
+    filterPlans();
+  }
+}, true);
+document.addEventListener('input', event => {
+  if ((event.target as HTMLElement).matches('[data-plan-search]')) filterPlans();
+  if ((event.target as HTMLElement).matches('[data-v3-plan-input]')) {
+    const input = event.target as HTMLTextAreaElement;
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(260, Math.max(44, input.scrollHeight))}px`;
+    const tooLong = input.value.length > MAX_PLAN_INPUT;
+    input.setAttribute('aria-invalid', String(tooLong));
+    const hint = document.querySelector('[data-plan-limit-hint]');
+    if (hint) hint.textContent = tooLong ? 'Over the limit. Split this draft into two parts; all your text is still here.' : 'Lists, dates and notes welcome.';
+    const count = document.querySelector('[data-plan-count]');
+    if (count) count.textContent = `${input.value.length.toLocaleString('en-GB')} / 25,000`;
+  }
 });

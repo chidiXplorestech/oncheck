@@ -1,13 +1,13 @@
 import './brand.css';
+import { trackMark } from './identity';
 
 const BRAND_FROM = 'ONCHECK';
 const BRAND_TO = 'ONTRACK';
-const MARK = `${import.meta.env.BASE_URL}ontrack-mark.svg`;
 
 function lockup(node: HTMLElement) {
   if (node.dataset.ontrackLockup === '1') return;
   node.dataset.ontrackLockup = '1';
-  node.innerHTML = `<img class="ontrack-brand-mark" src="${MARK}" alt="" aria-hidden="true"><span>ONTRACK</span>`;
+  node.innerHTML = `<span class="ontrack-brand-mark">${trackMark()}</span><span class="ontrack-wordmark">ontrack<span class="ontrack-brand-dot">.</span></span>`;
 }
 
 function replaceBrandText(root: ParentNode = document) {
@@ -24,7 +24,7 @@ function replaceBrandText(root: ParentNode = document) {
   document.title = BRAND_TO;
   document.querySelector('meta[name="description"]')?.setAttribute(
     'content',
-    'ONTRACK — a visual personal operating system for focus, execution, progress, training and planning.',
+    'ONTRACK — make room for what matters. Your goals, daily focus and week in one place.',
   );
   document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', BRAND_TO);
 }

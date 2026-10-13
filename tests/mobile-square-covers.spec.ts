@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 async function openFirstGoal(page: import('@playwright/test').Page) {
   await page.locator('[data-v3-all-plans]').click();
-  await page.locator('.ot-plans-dialog [data-action="edit-goal"]').first().click();
+  await page.locator('.ot-plans-page [data-action="edit-goal"]').first().click();
 }
 
 async function expectSquareCover(page: import('@playwright/test').Page, selector: string) {

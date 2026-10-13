@@ -15,7 +15,12 @@ function assetPath(value) {
 const stylesheetPattern = /<link\s+rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/gi;
 for (const match of [...html.matchAll(stylesheetPattern)]) {
   const href = match[1];
-  const css = await readFile(assetPath(href), 'utf8');
+  let css = await readFile(assetPath(href), 'utf8');
+  for (const font of [...css.matchAll(/url\(([^)]+\.woff2)\)/g)]) {
+    const relative = font[1].replace(/^['"]|['"]$/g, '');
+    const bytes = await readFile(resolve(dirname(assetPath(href)), relative));
+    css = css.replace(font[0], `url(data:font/woff2;base64,${bytes.toString('base64')})`);
+  }
   html = html.replace(match[0], `<style data-oncheck-offline>\n${css}\n</style>`);
 }
 
