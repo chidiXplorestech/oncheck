@@ -326,10 +326,10 @@ function buildHome() {
           <section class="ot-command">
             <form data-v3-plan-form>
               <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="25000" required aria-label="Describe your plan" placeholder="What do you want to work towards?"></textarea>
+                <textarea data-v3-plan-input rows="2" required aria-label="Describe your plan" aria-describedby="ot-plan-input-limit" placeholder="What do you want to work towards?"></textarea>
                 <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
               </div>
-              <div class="ot-input-meta"><span>Lists, dates and notes welcome.</span><span data-plan-count>0 / 25,000</span></div>
+              <div class="ot-input-meta" id="ot-plan-input-limit"><span data-plan-limit-hint>Lists, dates and notes welcome.</span><span data-plan-count>0 / 25,000</span></div>
               <details class="ot-shortcuts"><summary>Planning shortcuts</summary><div class="ot-chips" aria-label="Planning shortcuts">
                 <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
                 <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
@@ -406,7 +406,7 @@ function hasConflict(blocks: CoreBlock[], day: number, start: number, duration: 
 function suggestedSlots(plan: AiPlan, state: CoreState) {
   const count = Math.min(7, Math.max(0, Math.round(plan.schedule.sessions_per_week)));
   if (!count) return [] as Array<{ day: number; start: number; duration: number }>;
-  const duration = Math.max(0.5, Math.min(4, plan.schedule.duration_minutes / 60));
+  const duration = Math.max(0.25, Math.min(4, plan.schedule.duration_minutes / 60));
   const [from, to] = windowFor(plan.schedule.preferred_time);
   const found: Array<{ day: number; start: number; duration: number }> = [];
   const today = mondayIndex();
@@ -672,7 +672,11 @@ async function submitPlan(form: HTMLFormElement) {
     fallback.type = 'button';
     fallback.className = 'ot-secondary ot-import-draft';
     fallback.textContent = 'Import my draft as written';
-    fallback.addEventListener('click', () => previewPlan(importDraft(input?.value.trim() || intent), input?.value.trim() || intent));
+    fallback.addEventListener('click', () => {
+      const draft = input?.value.trim() || intent;
+      if (draft.length > MAX_PLAN_INPUT) { status.textContent = 'Split this draft into parts of up to 25,000 characters. Your full text is still in the field.'; return; }
+      previewPlan(importDraft(draft), draft);
+    });
     status.append(fallback);
   } finally {
     planning = false;
@@ -705,6 +709,7 @@ document.addEventListener('click', event => {
     const input = document.querySelector<HTMLTextAreaElement>('[data-v3-plan-input]');
     if (input) {
       input.value = target.dataset.v3Prompt;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
       input.focus();
     }
     return;
@@ -784,7 +789,12 @@ document.addEventListener('input', event => {
   if ((event.target as HTMLElement).matches('[data-plan-search]')) filterPlans();
   if ((event.target as HTMLElement).matches('[data-v3-plan-input]')) {
     const input = event.target as HTMLTextAreaElement;
+    input.style.height = 'auto';
     input.style.height = `${Math.min(260, Math.max(44, input.scrollHeight))}px`;
+    const tooLong = input.value.length > MAX_PLAN_INPUT;
+    input.setAttribute('aria-invalid', String(tooLong));
+    const hint = document.querySelector('[data-plan-limit-hint]');
+    if (hint) hint.textContent = tooLong ? 'Over the limit. Split this draft into two parts; all your text is still here.' : 'Lists, dates and notes welcome.';
     const count = document.querySelector('[data-plan-count]');
     if (count) count.textContent = `${input.value.length.toLocaleString('en-GB')} / 25,000`;
   }

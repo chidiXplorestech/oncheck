@@ -76,11 +76,18 @@ export function parseStructuredPlans(intent) {
   };
 }
 
+function validDate(value) {
+  if (value === null) return true;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T12:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
 export function validPlan(plan) {
   return plan && typeof plan.title === 'string' && plan.title.trim().length > 0
     && typeof plan.summary === 'string' && typeof plan.category === 'string'
     && ['low', 'medium', 'high'].includes(plan.priority) && typeof plan.cadence === 'string'
-    && (plan.target_date === null || (typeof plan.target_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(plan.target_date)))
+    && validDate(plan.target_date)
     && Array.isArray(plan.tasks) && plan.tasks.length <= 80
     && plan.tasks.every(task => task && typeof task.title === 'string' && task.title.trim())
     && Array.isArray(plan.assumptions) && plan.assumptions.every(item => typeof item === 'string')

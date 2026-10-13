@@ -48,5 +48,6 @@ test('Training remains available from the redesigned plan collection', async ({ 
   await page.locator('.training-visual-banner').scrollIntoViewIfNeeded();
   await expect(page.locator('.training-visual-banner img')).toHaveJSProperty('complete', true);
   expect(await page.locator('.training-visual-banner img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  await expect(page.locator('.training-visual-banner img')).toHaveCSS('opacity', '1');
   await page.locator('.training-space').screenshot({ path: testInfo.outputPath('training-phone.png') });
 });

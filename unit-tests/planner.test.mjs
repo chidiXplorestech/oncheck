@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../netlify/functions/ontrack-plan.mjs';
-import { MAX_PLAN_INPUT, parseStructuredPlans } from '../shared/planning-input.mjs';
+import { MAX_PLAN_INPUT, parseStructuredPlans, validPlan } from '../shared/planning-input.mjs';
 
 const authored = `**Near-term plan**\n${Array.from({ length: 14 }, (_, i) => `${i + 1}. **Action ${i + 1}:** Review the next step, confirm the date and budget, and keep the full original detail.`).join('\n')}\n\n**Long-term plan**\n${Array.from({ length: 10 }, (_, i) => `${i + 1}. Goal ${i + 1}: Practise consistently and review progress towards 11 January 2027.`).join('\n')}\n\n**Investment notes**\nMonthly contribution: £50. Assumed growth: 5%. Fees excluded.\n| Time | Amount |\n| 12 months | £600 |\n\\[B = P\\times((1+r)^n-1)/r\\]\n\n**Weekly check-in**\nReview progress once a week and budgets once a month.`;
 const plan = { title: 'Learn Python', summary: 'Practise weekly.', category: 'Learning', priority: 'medium', cadence: 'Weekly', target_date: null, tasks: [{ title: 'Work through a Python exercise' }], schedule: { sessions_per_week: 1, duration_minutes: 120, preferred_time: 'evening' }, assumptions: [], notes: '' };
@@ -91,4 +91,10 @@ test('malformed and missing schedule fields do not reach the preview', async t =
   const response = await handler(request('Learn Python'));
   assert.equal(response.status, 502);
   assert.match((await response.json()).error, /invalid plan/);
+});
+
+test('calendar dates must exist, including leap-year dates', () => {
+  assert.equal(Boolean(validPlan({ ...plan, target_date: '2027-02-31' })), false);
+  assert.equal(Boolean(validPlan({ ...plan, target_date: '2027-02-29' })), false);
+  assert.equal(Boolean(validPlan({ ...plan, target_date: '2028-02-29' })), true);
 });

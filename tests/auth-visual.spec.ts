@@ -11,9 +11,12 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 
     await expect(page.getByLabel('Email', { exact: true })).toBeVisible();
     await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(page.locator('html')).not.toHaveAttribute('data-auth-bypass');
+    await expect(page.locator('.auth-heading h1')).toHaveCSS('opacity', '1');
+    if (viewport.width > 900) await expect(page.locator('.auth-atmosphere')).toHaveCSS('opacity', '1');
     await page.screenshot({ path: testInfo.outputPath(`account-${viewport.width}.png`) });
     await page.locator('[data-auth-mode="signup"]').click();
     await expect(page.getByLabel('Confirm password', { exact: true })).toBeVisible();
+    await expect(page.locator('.auth-heading h1')).toHaveCSS('opacity', '1');
     await page.locator('.auth-primary').scrollIntoViewIfNeeded();
     const action = await page.locator('.auth-primary').boundingBox();
     expect(action!.y).toBeGreaterThanOrEqual(0);

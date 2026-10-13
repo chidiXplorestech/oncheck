@@ -21,11 +21,13 @@ media.add('(prefers-reduced-motion: no-preference)', () => {
   const visibility = () => { dust.paused(document.hidden); };
   document.addEventListener('visibilitychange', visibility);
 
+  const pendingImages = new Set<HTMLImageElement>();
   const imageObserver = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
       const image = entry.target as HTMLImageElement;
       imageObserver.unobserve(image);
+      pendingImages.delete(image);
       const reveal = () => {
         if (!active || !image.isConnected || !image.naturalWidth) return;
         const context = gsap.context(() => {
@@ -45,6 +47,9 @@ media.add('(prefers-reduced-motion: no-preference)', () => {
     for (const [element, context] of contexts) {
       if (!element.isConnected) { context.revert(); contexts.delete(element); }
     }
+    for (const image of pendingImages) {
+      if (!image.isConnected) { imageObserver.unobserve(image); pendingImages.delete(image); }
+    }
     const views = document.querySelectorAll<HTMLElement>('.ot-home,.ot-plans-page,.page-wrap,.calendar-page,.auth-stage,dialog[open]');
     for (const view of views) {
       if (seenViews.has(view)) continue;
@@ -61,6 +66,7 @@ media.add('(prefers-reduced-motion: no-preference)', () => {
     document.querySelectorAll<HTMLImageElement>('.training-visual-banner img,.exercise-visual img,.media-item img,.db-media-item img,.preview-cover img,.media-thumb img').forEach(image => {
       if (seenImages.has(image)) return;
       seenImages.add(image);
+      pendingImages.add(image);
       imageObserver.observe(image);
     });
   };
@@ -73,6 +79,7 @@ media.add('(prefers-reduced-motion: no-preference)', () => {
     cancelAnimationFrame(frame);
     observer.disconnect();
     imageObserver.disconnect();
+    pendingImages.clear();
     document.removeEventListener('visibilitychange', visibility);
     for (const context of contexts.values()) context.revert();
     contexts.clear();

@@ -18,6 +18,11 @@ test('long authored plans preview and save all actions and notes once', async ({
   await expect(preview).toContainText('10 actions');
   await expect(preview).toContainText('Fees excluded');
   await expect(preview).toContainText('11 January 2027');
+  const dialogRect = await preview.boundingBox();
+  for (const action of await preview.locator('footer button').all()) {
+    const applyRect = await action.boundingBox();
+    expect(applyRect!.y + applyRect!.height).toBeLessThanOrEqual(dialogRect!.y + dialogRect!.height);
+  }
   await page.screenshot({ path: testInfo.outputPath('long-plan-preview.png') });
   await preview.locator('[data-v3-apply]').evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
   await expect(preview).toHaveCount(0);
@@ -30,6 +35,51 @@ test('long authored plans preview and save all actions and notes once', async ({
   await page.reload();
   await page.locator('.sidebar [data-nav="goals"]').click();
   await expect(page.locator('[data-plan-card]')).toHaveCount(before.goals.length + 4);
+});
+
+test('oversized paste stays intact and reports the limit before submission', async ({ page }) => {
+  await page.goto('/');
+  const draft = 'Full draft. '.repeat(2400);
+  await page.getByLabel('Describe your plan').fill(draft);
+  await expect(page.getByLabel('Describe your plan')).toHaveValue(draft);
+  await expect(page.getByLabel('Describe your plan')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('[data-plan-limit-hint]')).toContainText('all your text is still here');
+  await page.getByRole('button', { name: 'Plan it', exact: true }).click();
+  await expect(page.locator('[data-v3-plan-status]')).toContainText('25,000 characters');
+  await expect(page.locator('.ot-thinking-stage')).toHaveCount(0);
+});
+
+test('an AI fifteen-minute session stays fifteen minutes through preview and editing', async ({ page }) => {
+  // Synthetic session; every Supabase request is blocked, so no real account is used.
+  await page.route('https://ayizmdoyynptwadnjpdc.supabase.co/**', route => route.abort());
+  await page.addInitScript(() => localStorage.setItem('sb-ayizmdoyynptwadnjpdc-auth-token', JSON.stringify({
+    access_token: 'synthetic-e2e-token', refresh_token: 'synthetic-refresh', token_type: 'bearer', expires_at: 4102444800,
+    user: { id: '00000000-0000-0000-0000-000000000001', email: 'synthetic@example.com' },
+  })));
+  const intent = 'Practise Python for fifteen minutes each week. '.repeat(35).trim();
+  let calls = 0;
+  await page.route('**/api/ontrack-plan', async route => {
+    calls++;
+    expect(route.request().postDataJSON().intent).toBe(intent);
+    await route.fulfill({ json: { source: 'ai', plans: [{
+      title: '15-minute practice', summary: 'One small weekly exercise.', category: 'Learning', priority: 'medium', cadence: 'Weekly', target_date: null,
+      tasks: [{ title: 'Complete one Python exercise' }], assumptions: [], notes: '',
+      schedule: { sessions_per_week: 1, duration_minutes: 15, preferred_time: 'morning' },
+    }] } });
+  });
+  await page.goto('/');
+  await page.getByLabel('Describe your plan').fill(intent);
+  await page.getByRole('button', { name: 'Plan it', exact: true }).click();
+  await expect(page.locator('.ot-slot-list')).toContainText('0.25h');
+  await page.getByRole('button', { name: 'Apply to ONTRACK', exact: true }).click();
+  expect(calls).toBe(1);
+  await page.locator('.ot-next-row').filter({ hasText: '15-minute practice' }).click();
+  const hours = page.locator('dialog.modal input[name="duration"]');
+  await expect(hours).toHaveValue('0.25');
+  expect(await hours.evaluate((input: HTMLInputElement) => input.checkValidity())).toBe(true);
+  await page.getByRole('button', { name: 'Save Block', exact: true }).click();
+  const duration = await page.evaluate(() => JSON.parse(localStorage.getItem('oncheck-state-v1')!).blocks.find((block: any) => block.title === '15-minute practice').duration);
+  expect(duration).toBe(.25);
 });
 
 test('planner failure keeps draft editable and offers an explicit text import', async ({ page }) => {
