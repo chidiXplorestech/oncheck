@@ -65,6 +65,7 @@ for (const viewport of [
       expect(deleteButton!.x + deleteButton!.width).toBeLessThanOrEqual(cardBox!.x + cardBox!.width + 1);
     }
     await noPageOverflow(page);
+    await expect(page.locator('.mobile-media-toast,.media-toast')).toHaveCount(0);
     await page.evaluate(async () => { await document.fonts.ready; window.scrollTo(0, 0); });
     await page.screenshot({ path: testInfo.outputPath(`vault-${viewport.width}.png`), fullPage: true });
 
@@ -79,6 +80,8 @@ for (const viewport of [
     const options = page.locator('.mobile-media-option,.media-picker-option');
     await expect(options).toHaveCount(3);
     await imageInsideFrame(options.first().locator('img'), options.first(), viewport.width);
+    const pickerImage = await options.first().locator('img').boundingBox();
+    expect(pickerImage!.height).toBeLessThanOrEqual(Math.min(180, viewport.height * .35) + 1);
     await page.screenshot({ path: testInfo.outputPath(`picker-${viewport.width}.png`) });
     const coverReload = viewport.width <= 900 ? page.waitForEvent('load') : Promise.resolve();
     await options.first().click();
@@ -97,6 +100,7 @@ for (const viewport of [
     const ratio = viewport.width <= 900 ? 1 : 4 / 3;
     expect(Math.abs(coverBox!.width / coverBox!.height - ratio)).toBeLessThan(.02);
     await noPageOverflow(page);
+    await expect(page.locator('.mobile-media-toast,.media-toast')).toHaveCount(0);
 
     await page.locator('.sidebar [data-nav="goals"]').click();
     await page.locator('[data-plan-card][data-id="training"]').click();
@@ -110,6 +114,12 @@ for (const viewport of [
     expect(caption!.y + caption!.height).toBeLessThanOrEqual(bannerBox!.y + bannerBox!.height);
     expect(caption!.x + caption!.width).toBeLessThanOrEqual(bannerBox!.x + bannerBox!.width);
     await noPageOverflow(page);
+    await banner.evaluate(node => node.scrollIntoView({ block: 'start' }));
+    const visibleBanner = await banner.boundingBox();
+    if (viewport.width <= 900) {
+      const dock = await page.locator('.sidebar').boundingBox();
+      expect(visibleBanner!.y + visibleBanner!.height).toBeLessThanOrEqual(dock!.y);
+    }
     await banner.screenshot({ path: testInfo.outputPath(`workout-${viewport.width}.png`) });
   });
 }
