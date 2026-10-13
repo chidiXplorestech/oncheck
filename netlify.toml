@@ -5,6 +5,9 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[functions]
+  node_bundler = "esbuild"
+
 # Secure AI planner endpoint. Netlify Functions handle the OpenAI secret server-side.
 [[redirects]]
   from = "/api/ontrack-plan"

@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { currentFocus, homeSyncLabel } from './home-state';
 import { trackMark, navIcon } from './identity';
+import { MAX_PLAN_INPUT, parseStructuredPlans, importDraft, validPlan, type PlannerPlan, type PlannerResult } from '../shared/planning-input.mjs';
 
 type Priority = 'low' | 'medium' | 'high';
 type GoalStatus = 'active' | 'on-hold' | 'completed';
@@ -30,21 +31,7 @@ type CoreBlock = {
 type CoreState = { goals: CoreGoal[]; blocks: CoreBlock[]; media: string[] };
 type DailyFocus = { date: string; lowEnergy: boolean; items: Array<{ id: string; title: string; done: boolean }> };
 type AccountPrefs = { name?: string; role?: string; email?: string; maxDailyPriorities?: number; lowEnergyMinutes?: number };
-type AiPlan = {
-  title: string;
-  summary: string;
-  category: string;
-  priority: Priority;
-  cadence: string;
-  target_date: string | null;
-  tasks: Array<{ title: string }>;
-  schedule: {
-    sessions_per_week: number;
-    duration_minutes: number;
-    preferred_time: 'morning' | 'afternoon' | 'evening' | 'any';
-  };
-  assumptions: string[];
-};
+type AiPlan = PlannerPlan;
 
 const CORE_KEY = 'oncheck-state-v1';
 const FOCUS_KEY = 'oncheck-daily-focus-v2';
@@ -334,14 +321,15 @@ function buildHome() {
         </section>
         <section class="ot-intro">
           <h2>Make room for something new.</h2>
-          <p class="ot-intro-copy">A new goal, a shifting deadline, a lighter week. Start with what you need.</p>
+          <p class="ot-intro-copy">One goal or your whole plan. Paste a list and keep every next step.</p>
 
           <section class="ot-command">
             <form data-v3-plan-form>
               <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="What do you want to work towards?"></textarea>
+                <textarea data-v3-plan-input rows="2" maxlength="25000" required aria-label="Describe your plan" placeholder="What do you want to work towards?"></textarea>
                 <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
               </div>
+              <div class="ot-input-meta"><span>Lists, dates and notes welcome.</span><span data-plan-count>0 / 25,000</span></div>
               <details class="ot-shortcuts"><summary>Planning shortcuts</summary><div class="ot-chips" aria-label="Planning shortcuts">
                 <button type="button" data-v3-prompt="Fit a new goal into my week without overloading me."><span>Fit something new into my week</span><em>↗</em></button>
                 <button type="button" data-v3-prompt="Reorganise my week around a new deadline."><span>I have a new deadline</span><em>↗</em></button>
@@ -462,6 +450,9 @@ function planContext() {
 }
 
 async function requestPlan(intent: string) {
+  // Authored structured plans can be imported intact, including while offline.
+  const imported = parseStructuredPlans(intent);
+  if (imported) return imported;
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error('Please sign in again before using the planner.');
@@ -475,7 +466,7 @@ async function requestPlan(intent: string) {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ intent, context: planContext() }),
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(50_000),
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
@@ -491,38 +482,52 @@ async function requestPlan(intent: string) {
     }
     throw new Error(payload?.error || 'ONTRACK could not create a plan right now.');
   }
-  return payload.plan as AiPlan;
+  const plans = payload.plans ?? (payload.plan ? [payload.plan] : []);
+  if (!Array.isArray(plans) || !plans.length || plans.length > 32 || !plans.every(validPlan)) {
+    throw new Error('The planner returned a plan that could not be reviewed. Try again or import your draft as written.');
+  }
+  return { plans, source: payload.source, notice: payload.notice } as PlannerResult;
 }
 
 function openPlans() { showPlansPage(); }
 
-function previewPlan(plan: AiPlan, sourceText: string) {
+function previewPlan(result: PlannerResult, sourceText: string) {
   document.querySelector<HTMLDialogElement>('.ot-plan-dialog')?.close();
   const state = readCoreState();
-  const slots = suggestedSlots(plan, state);
+  const working = structuredClone(state);
+  const previews = result.plans.map(plan => {
+    const slots = suggestedSlots(plan, working);
+    for (const slot of slots) working.blocks.push({ ...slot, id: uid(), goalId: 'preview', title: plan.title, done: false });
+    return { plan, slots };
+  });
+  const multiple = previews.length > 1;
   const dialog = document.createElement('dialog');
   dialog.className = 'ot-plan-dialog';
   dialog.setAttribute('aria-label', 'Plan preview');
   dialog.innerHTML = `
     <div class="ot-plan-panel">
       <header>
-        <div><span>PLAN PREVIEW</span><h2>${esc(plan.title)}</h2><p>${esc(plan.summary)}</p></div>
+        <div><span>${result.source === 'structured_import' ? 'IMPORTED PLAN' : 'PLAN PREVIEW'}</span><h2>${multiple ? `${previews.length} plans. One clear view.` : esc(previews[0].plan.title)}</h2><p>${esc(result.notice || (multiple ? 'Review every plan before adding them to your workspace.' : previews[0].plan.summary))}</p></div>
         <button type="button" data-v3-close aria-label="Close">×</button>
       </header>
+      ${previews.map(({ plan, slots }, index) => `<article class="ot-preview-item" data-plan-preview-item>
+      ${multiple ? `<h2><span>${String(index + 1).padStart(2, '0')}</span>${esc(plan.title)}</h2><p class="ot-preview-summary">${esc(plan.summary)}</p>` : ''}
       <div class="ot-plan-meta">
         <span>${esc(plan.priority)} priority</span>
         <span>${esc(plan.cadence)}</span>
         ${plan.target_date ? `<span>Target ${esc(plan.target_date)}</span>` : ''}
       </div>
-      <section><h3>Actions</h3><div class="ot-plan-tasks">${plan.tasks.map(task => `<div><span>○</span>${esc(task.title)}</div>`).join('')}</div></section>
+      <section><h3>${plan.tasks.length ? `${plan.tasks.length} actions` : 'Reference notes'}</h3><div class="ot-plan-tasks">${plan.tasks.map(task => `<div><span>○</span>${esc(task.title)}</div>`).join('')}</div></section>
+      ${plan.notes ? `<details class="ot-source-notes" ${plan.tasks.length ? '' : 'open'}><summary>Original notes · kept in full</summary><pre>${esc(plan.notes)}</pre></details>` : ''}
       <section><h3>Suggested space</h3>
         ${slots.length ? `<div class="ot-slot-list">${slots.map(slot => `<div><b>${dayName(slot.day)}</b><span>${timeLabel(slot.start)}</span><em>${slot.duration}h</em></div>`).join('')}</div>` : `<p class="ot-empty">${plan.schedule.sessions_per_week ? 'No free slots were found. The plan can be added without calendar blocks.' : 'No recurring time requested. ONTRACK will add the plan without calendar blocks.'}</p>`}
         ${slots.length > 0 && slots.length < plan.schedule.sessions_per_week ? `<p class="ot-empty">Only ${slots.length} of ${plan.schedule.sessions_per_week} requested sessions fit. Review your week before adding more.</p>` : ''}
       </section>
       ${plan.assumptions.length ? `<section class="ot-assumptions"><h3>Assumptions</h3><p>${plan.assumptions.map(esc).join(' · ')}</p></section>` : ''}
+      </article>`).join('')}
       <footer>
-        <button type="button" class="ot-secondary" data-v3-close>Adjust later</button>
-        <button type="button" class="ot-apply" data-v3-apply>Apply to ONTRACK</button>
+        <button type="button" class="ot-secondary" data-v3-close>Back to draft</button>
+        <button type="button" class="ot-apply" data-v3-apply>${multiple ? `Add ${previews.length} plans` : 'Apply to ONTRACK'}</button>
       </footer>
     </div>`;
   document.body.append(dialog);
@@ -530,10 +535,14 @@ function previewPlan(plan: AiPlan, sourceText: string) {
 
   const close = () => dialog.close();
   dialog.querySelectorAll('[data-v3-close]').forEach(button => button.addEventListener('click', close));
-  dialog.querySelector('[data-v3-apply]')?.addEventListener('click', () => {
+  let applied = false;
+  dialog.querySelector<HTMLButtonElement>('[data-v3-apply]')?.addEventListener('click', event => {
+    if (applied) return;
+    const applyButton = event.currentTarget as HTMLButtonElement;
     const current = readCoreState();
+    for (const [index, { plan, slots }] of previews.entries()) {
     const goalId = `ai-${uid()}`;
-    current.goals.unshift({
+    current.goals.splice(index, 0, {
       id: goalId,
       title: plan.title,
       category: plan.category || 'Personal',
@@ -541,7 +550,7 @@ function previewPlan(plan: AiPlan, sourceText: string) {
       priority: plan.priority,
       cadence: plan.cadence || 'Weekly',
       targetDate: plan.target_date ?? '',
-      notes: `${plan.summary}\n\nCreated from: ${sourceText}`,
+      notes: plan.notes || `${plan.summary}\n\nCreated from: ${sourceText}`,
       tasks: plan.tasks.map(task => ({ id: uid(), title: task.title, done: false })),
     });
     for (const slot of slots) {
@@ -555,10 +564,22 @@ function previewPlan(plan: AiPlan, sourceText: string) {
         done: false,
       });
     }
-    writeJson(CORE_KEY, current);
+    }
+    try {
+      writeJson(CORE_KEY, current);
+    } catch {
+      applyButton.textContent = 'Could not save. Try again';
+      return;
+    }
+    applied = true;
+    applyButton.disabled = true;
+    // The live core state also needs the saved batch before any later UI save.
+    const runtime = (window as unknown as { __ONTRACK_CORE_STATE__?: CoreState }).__ONTRACK_CORE_STATE__;
+    if (runtime) Object.assign(runtime, current);
     dialog.close();
-    patchHome();
-    window.setTimeout(() => location.reload(), 350);
+    const homeButton = document.querySelector<HTMLButtonElement>('.sidebar [data-nav="overview"]');
+    if (homeButton) homeButton.click();
+    else patchHome(true);
   });
   dialog.addEventListener('close', () => dialog.remove(), { once: true });
 }
@@ -622,6 +643,7 @@ async function submitPlan(form: HTMLFormElement) {
   const status = document.querySelector<HTMLElement>('[data-v3-plan-status]');
   const intent = input?.value.trim() ?? '';
   if (!intent || !status) return;
+  if (intent.length > MAX_PLAN_INPUT) { status.hidden = false; status.textContent = 'Split this draft into parts of up to 25,000 characters.'; return; }
 
   planning = true;
   status.hidden = false;
@@ -645,7 +667,13 @@ async function submitPlan(form: HTMLFormElement) {
   } catch (error) {
     window.clearTimeout(timer);
     closePlanningStage();
-    status.textContent = error instanceof Error ? error.message : 'ONTRACK could not create the plan.';
+    status.replaceChildren(document.createTextNode(error instanceof Error ? error.message : 'ONTRACK could not create the plan.'));
+    const fallback = document.createElement('button');
+    fallback.type = 'button';
+    fallback.className = 'ot-secondary ot-import-draft';
+    fallback.textContent = 'Import my draft as written';
+    fallback.addEventListener('click', () => previewPlan(importDraft(input?.value.trim() || intent), input?.value.trim() || intent));
+    status.append(fallback);
   } finally {
     planning = false;
     form.classList.remove('busy');
@@ -754,4 +782,10 @@ document.addEventListener('click', event => {
 }, true);
 document.addEventListener('input', event => {
   if ((event.target as HTMLElement).matches('[data-plan-search]')) filterPlans();
+  if ((event.target as HTMLElement).matches('[data-v3-plan-input]')) {
+    const input = event.target as HTMLTextAreaElement;
+    input.style.height = `${Math.min(260, Math.max(44, input.scrollHeight))}px`;
+    const count = document.querySelector('[data-plan-count]');
+    if (count) count.textContent = `${input.value.length.toLocaleString('en-GB')} / 25,000`;
+  }
 });

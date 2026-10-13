@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Home state regression tests
+      - name: State and planner regression tests
         run: node --experimental-strip-types --test unit-tests/*.test.mjs
 
       - name: Typecheck

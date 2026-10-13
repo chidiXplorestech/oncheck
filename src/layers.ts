@@ -14,6 +14,7 @@ import './workout-visuals';
 import './redesign-layer';
 import './pwa';
 import './redesign-layer.css';
+import './motion-layer';
 
 document.documentElement.dataset.oncheckLayers = 'ready';
 document.documentElement.dataset.oncheckCalendarImport = 'ready';
