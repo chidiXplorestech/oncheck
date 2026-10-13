@@ -1,6 +1,6 @@
-import './redesign-layer.css';
 import { supabase } from './supabase';
 import { currentFocus, homeSyncLabel } from './home-state';
+import { trackMark, navIcon } from './identity';
 
 type Priority = 'low' | 'medium' | 'high';
 type GoalStatus = 'active' | 'on-hold' | 'completed';
@@ -143,19 +143,13 @@ function syncLabel() {
   return homeSyncLabel(document.documentElement.dataset.cloudSync);
 }
 
-function brandMark() {
-  return `
-    <svg viewBox="0 0 36 36" aria-hidden="true">
-      <circle cx="18" cy="18" r="11.4" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="52 20" stroke-linecap="round"/>
-      <path d="M10.5 22.6 24.8 8.3m-6.1.3h6.4V15" fill="none" stroke="var(--ot-lime)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-}
+function brandMark() { return trackMark(); }
 
 function patchNavigation() {
   const brand = document.querySelector<HTMLElement>('.brand');
   if (brand && brand.dataset.v3 !== '1') {
     brand.dataset.v3 = '1';
-    brand.innerHTML = `<span class="ot-brand-mark">${brandMark()}</span><span>ONTRACK</span>`;
+    brand.innerHTML = `<span class="ot-brand-mark">${brandMark()}</span><span class="ontrack-wordmark">ontrack.</span>`;
   }
 
   const labels: Record<string, string> = {
@@ -167,20 +161,68 @@ function patchNavigation() {
   document.querySelectorAll<HTMLElement>('.nav-btn[data-nav]').forEach(button => {
     const key = button.dataset.nav ?? '';
     if (!labels[key] || button.dataset.v3Nav === '1') return;
-    const icon = button.querySelector('span')?.outerHTML ?? '';
+    const icon = `<span class="ot-nav-icon">${navIcon(key)}</span>`;
     button.innerHTML = `${icon}<span class="ot-nav-label">${labels[key]}</span>`;
     button.dataset.v3Nav = '1';
+    button.setAttribute('aria-label', labels[key]);
   });
 
   const settings = document.querySelector<HTMLElement>('.oncheck-system-nav');
   if (settings && settings.dataset.v3Nav !== '1') {
-    const icon = settings.querySelector('span')?.outerHTML ?? '<span>⌁</span>';
+    const icon = `<span class="ot-nav-icon">${navIcon('settings')}</span>`;
     settings.innerHTML = `${icon}<span class="ot-nav-label">Settings</span>`;
     settings.dataset.v3Nav = '1';
   }
 
   const quote = document.querySelector<HTMLElement>('.side-quote');
   if (quote) quote.remove();
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar && !sidebar.querySelector('.ot-rail-note')) {
+    const note = document.createElement('div');
+    note.className = 'ot-rail-note';
+    note.innerHTML = '<span>AT YOUR PACE</span><p>Make room for<br>what matters.</p><i></i><small>One day. One next step.</small>';
+    sidebar.append(note);
+  }
+}
+
+function screenHeader(label: string) {
+  return `<header class="ot-topbar ot-screen-bar"><button type="button" class="ot-wordmark" data-v3-nav-target="overview" aria-label="ONTRACK home"><span class="ot-wordmark-mark">${brandMark()}</span><span class="ontrack-wordmark">ontrack.</span></button><span class="ot-page-context">Your workspace <i>/</i> ${label}</span><div class="ot-topbar-actions"><button class="ot-tour-button" type="button" data-v3-tour>Quick tour</button><button class="ot-account-button" type="button" data-system-settings="1" aria-label="Open account settings">${navIcon('settings')}<span>Account</span></button></div></header>`;
+}
+
+function patchScreenChrome() {
+  const workspace = document.querySelector<HTMLElement>('.workspace');
+  if (!workspace || workspace.querySelector('.ot-home,.ot-plans-page,.ot-screen-bar')) return;
+  const label = workspace.querySelector('.calendar-page') ? 'Week' : workspace.querySelector('.media-grid') ? 'Vault' : 'Plan';
+  workspace.insertAdjacentHTML('afterbegin', screenHeader(label));
+}
+
+function showPlansPage() {
+  const workspace = document.querySelector<HTMLElement>('.workspace');
+  if (!workspace) return;
+  const state = readCoreState();
+  workspace.innerHTML = `<div class="ot-plans-page">${screenHeader('Plans')}<div class="ot-collection">
+    <div class="ot-collection-head"><div><p class="ot-eyebrow">THE BIGGER PICTURE</p><h1>Your plans.<br><span>Your own pace.</span></h1><p>A place for what you’re working towards.</p></div><button type="button" class="primary" data-action="new-goal">+ New plan</button></div>
+    <div class="ot-plan-tools"><label class="ot-search">${navIcon('media')}<input type="search" aria-label="Search plans" placeholder="Find a plan…" data-plan-search></label><div class="ot-plan-filters" aria-label="Filter plans"><button type="button" class="active" data-plan-filter="all" aria-pressed="true">All plans</button><button type="button" data-plan-filter="active" aria-pressed="false">Active</button><button type="button" data-plan-filter="on-hold" aria-pressed="false">On hold</button><button type="button" data-plan-filter="completed" aria-pressed="false">Completed</button></div></div>
+    <div class="ot-plan-collection">${state.goals.map((goal, index) => `<button type="button" class="ot-collection-card" data-action="edit-goal" data-id="${goal.id}" data-plan-card data-plan-title="${esc(goal.title.toLowerCase())}" data-plan-status="${goal.status}" style="--card-tone:${index % 3}"><span class="ot-card-symbol">${navIcon('goals')}</span><span class="ot-card-category">${esc(goal.category)}</span><h2>${esc(goal.title)}</h2><p>${esc(goal.tasks.find(task => !task.done)?.title || 'Take a moment to review your next step.')}</p><div class="ot-card-footer"><span>${goal.status.replace('-', ' ')}</span><b>${progress(goal)}% <span aria-hidden="true">↗</span></b></div><i style="--p:${progress(goal)}%"></i></button>`).join('')}</div>
+    <div class="ot-collection-empty" ${state.goals.length ? 'hidden' : ''}><h2>A little room for possibility.</h2><p>Start with one thing you want to make happen.</p><button type="button" class="primary" data-action="new-goal">Create your first plan</button></div>
+    <p class="ot-no-matches" hidden>No plans match. Try another search or filter.</p>
+  </div></div>`;
+  document.querySelectorAll<HTMLElement>('.sidebar [data-nav]').forEach(button => button.classList.toggle('active', button.dataset.nav === 'goals'));
+  patchNavigation();
+}
+
+function filterPlans() {
+  const page = document.querySelector('.ot-plans-page');
+  if (!page) return;
+  const term = page.querySelector<HTMLInputElement>('[data-plan-search]')?.value.trim().toLowerCase() || '';
+  const filter = page.querySelector<HTMLElement>('[data-plan-filter].active')?.dataset.planFilter || 'all';
+  let visible = 0;
+  page.querySelectorAll<HTMLElement>('[data-plan-card]').forEach(card => {
+    card.hidden = !((filter === 'all' || card.dataset.planStatus === filter) && (card.dataset.planTitle || '').includes(term));
+    if (!card.hidden) visible += 1;
+  });
+  const empty = page.querySelector<HTMLElement>('.ot-no-matches');
+  if (empty) empty.hidden = visible > 0 || !readCoreState().goals.length;
 }
 
 function focusRows(focus: DailyFocus, goals: CoreGoal[]) {
@@ -219,7 +261,7 @@ function buildHome() {
       <header class="ot-topbar">
         <button class="ot-wordmark" type="button" data-v3-nav-target="overview" aria-label="ONTRACK home">
           <span class="ot-wordmark-mark">${brandMark()}</span>
-          <span>ONTRACK</span>
+          <span class="ontrack-wordmark">ontrack.</span>
         </button>
         <div class="ot-topbar-actions">
           <span class="ot-date">${todayLabel()}</span>
@@ -232,22 +274,22 @@ function buildHome() {
         <section class="ot-life">
           <div class="ot-life-heading">
             <p class="ot-eyebrow">${greeting()}, ${esc(name)}.</p>
-            <h1>Your day, in focus.</h1>
-            <span>${goals.length} active plans · keep today to ${maxPriorities}</span>
+            <h1>A little progress.<br><span>A better day.</span></h1>
+            <span>Make space for what matters. Keep today to ${maxPriorities} priorities.</span>
           </div>
 
           <div class="ot-life-layout">
             <section class="ot-plain-section ot-today">
               <div class="ot-section-head">
-                <div><span>TODAY</span><h3>What matters now</h3></div>
-                <button type="button" data-system-focus="1">Edit</button>
+                <div><span>TODAY’S FOCUS</span><h3>Your next moves</h3></div>
+                <button type="button" data-system-focus="1">Edit focus <span aria-hidden="true">↗</span></button>
               </div>
-              <div class="ot-focus-list">${focusRows(focus, goals)}</div>
+              <p class="ot-focus-hint">${focus.items.length ? `${focus.items.filter(item => item.done).length} of ${focus.items.length} complete · one step at a time` : 'Suggested from your plans. Choose your priorities with Edit focus.'}</p><div class="ot-focus-list">${focusRows(focus, goals)}</div><div class="ot-focus-foot"><span>Small steps count.</span><span>${String(new Date().getDate()).padStart(2, '0')} / ${String(new Date().getMonth()+1).padStart(2, '0')}</span></div>
             </section>
 
             <section class="ot-plain-section ot-up-next">
               <div class="ot-section-head">
-                <div><span>UP NEXT</span><h3>Coming up</h3></div>
+                <div><span>ON THE HORIZON</span><h3>Coming up</h3></div>
                 <button data-v3-nav-target="calendar" type="button">Week ↗</button>
               </div>
               <div class="ot-next-list">
@@ -262,13 +304,13 @@ function buildHome() {
 
             <section class="ot-plain-section ot-priorities">
               <div class="ot-section-head">
-                <div><span>PLANS</span><h3>Keep these moving</h3></div>
+                <div><span>YOUR PLANS</span><h3>Good things in motion</h3></div>
                 <button data-v3-all-plans type="button">All plans ↗</button>
               </div>
               <div class="ot-priority-list">
                 ${goals.slice(0, 3).map((goal, index) => `
                   <button class="ot-priority-row" type="button" data-action="select-goal" data-id="${goal.id}">
-                    <span class="ot-priority-index">0${index + 1}</span>
+                    <span class="ot-priority-index">${navIcon('goals')}</span>
                     <span class="ot-priority-copy"><b>${esc(goal.title)}</b><small>${esc(goal.category)} · ${esc(goal.cadence)}</small></span>
                     <span class="ot-priority-progress"><i style="--p:${progress(goal)}%"></i><em>${progress(goal)}%</em></span>
                   </button>`).join('') || '<div class="ot-empty-state"><p>No plans yet.</p><span>Choose one thing you want to work towards.</span><button type="button" class="ot-apply" data-action="new-goal">Create your first plan</button></div>'}
@@ -277,13 +319,13 @@ function buildHome() {
           </div>
         </section>
         <section class="ot-intro">
-          <h2>Make a plan</h2>
-          <p class="ot-intro-copy">Describe a goal or a change to your week. Review the plan before applying it.</p>
+          <h2>Make room for something new.</h2>
+          <p class="ot-intro-copy">A new goal, a shifting deadline, a lighter week. Start with what you need.</p>
 
           <section class="ot-command">
             <form data-v3-plan-form>
               <div class="ot-prompt-field">
-                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="Build me a plan for…"></textarea>
+                <textarea data-v3-plan-input rows="2" maxlength="1200" required aria-label="Describe your plan" placeholder="What do you want to work towards?"></textarea>
                 <button class="ot-plan-button" type="submit" aria-label="Plan it">↑</button>
               </div>
               <details class="ot-shortcuts"><summary>Planning shortcuts</summary><div class="ot-chips" aria-label="Planning shortcuts">
@@ -693,6 +735,7 @@ function bindLiquidDock() {
 
 const observer = new MutationObserver(() => {
   patchHome();
+  patchScreenChrome();
   updateSyncBadge();
   bindLiquidDock();
 });
@@ -706,5 +749,25 @@ document.addEventListener('visibilitychange', () => {
 });
 requestAnimationFrame(() => {
   patchHome();
+  patchScreenChrome();
   bindLiquidDock();
+});
+
+document.addEventListener('click', event => {
+  const target = (event.target as HTMLElement).closest<HTMLElement>('.sidebar [data-nav="goals"],[data-plan-filter]');
+  if (!target) return;
+  if (target.hasAttribute('data-nav')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showPlansPage();
+  } else {
+    document.querySelectorAll<HTMLElement>('[data-plan-filter]').forEach(button => {
+      button.classList.toggle('active', button === target);
+      button.setAttribute('aria-pressed', String(button === target));
+    });
+    filterPlans();
+  }
+}, true);
+document.addEventListener('input', event => {
+  if ((event.target as HTMLElement).matches('[data-plan-search]')) filterPlans();
 });

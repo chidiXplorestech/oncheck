@@ -214,7 +214,7 @@ function goalsView() {
   return layout(`
     <div class="page-wrap editor-layout">
       <section>
-        <div class="page-head"><div><button class="back-link" data-nav="overview">← Back to overview</button><h1>Edit Goal</h1></div><div class="head-actions"><button class="secondary" data-action="duplicate-goal" data-id="${goal.id}">Duplicate</button><button class="danger" data-action="delete-goal" data-id="${goal.id}">Delete</button></div></div>
+        <div class="page-head"><div><button class="back-link" data-nav="overview">← Back to Today</button><h1>Your plan</h1></div><div class="head-actions"><button class="secondary" data-action="duplicate-goal" data-id="${goal.id}">Duplicate</button><button class="danger" data-action="delete-goal" data-id="${goal.id}">Delete</button></div></div>
         <form id="goalForm" class="editor-card">
           <div class="form-grid three"><label>Goal title<input name="title" value="${esc(goal.title)}" required /></label><label>Category<input name="category" value="${esc(goal.category)}" /></label><label>Status<select name="status"><option value="active" ${goal.status==='active'?'selected':''}>Active</option><option value="on-hold" ${goal.status==='on-hold'?'selected':''}>On Hold</option><option value="completed" ${goal.status==='completed'?'selected':''}>Completed</option></select></label></div>
           <div class="form-grid four"><label>Cadence<input name="cadence" value="${esc(goal.cadence)}" /></label><label>Priority<select name="priority"><option value="low" ${goal.priority==='low'?'selected':''}>Low</option><option value="medium" ${goal.priority==='medium'?'selected':''}>Medium</option><option value="high" ${goal.priority==='high'?'selected':''}>High</option></select></label><label>Target date<input type="date" name="targetDate" value="${goal.targetDate}" /></label><label>Progress<div class="progress-readout"><b>${progress(goal)}%</b><div class="long-bar"><i style="width:${progress(goal)}%"></i></div></div></label></div>
@@ -261,7 +261,7 @@ function formatHour(hour: number) {
 }
 
 function mediaView() {
-  return layout(`<div class="page-wrap"><div class="page-head"><div><span class="eyebrow">VISUAL REFERENCES</span><h1>Media</h1><p>Attach mood, references and proof to the goals you care about.</p></div><button class="primary" data-action="upload-media">${icon('upload')} Add Media</button></div><div class="media-grid">${state.media.map((src,i)=>`<div class="media-item"><img src="${src}" alt="Uploaded reference ${i+1}"/><button class="icon-btn" data-action="delete-media" data-index="${i}">${icon('trash')}</button></div>`).join('')}<button class="media-add" data-action="upload-media"><span>+</span><small>Add image</small></button></div></div>`);
+  return layout(`<div class="page-wrap"><div class="page-head"><div><span class="eyebrow">VISUAL REFERENCES</span><h1>Your vault</h1><p>Keep the references, ideas and evidence that move you forward.</p></div><button class="primary" data-action="upload-media">${icon('upload')} Add Media</button></div><div class="media-grid">${state.media.map((src,i)=>`<div class="media-item"><img src="${src}" alt="Uploaded reference ${i+1}"/><button class="icon-btn" data-action="delete-media" data-index="${i}">${icon('trash')}</button></div>`).join('')}<button class="media-add" data-action="upload-media"><span>+</span><small>Add image</small></button></div></div>`);
 }
 
 function mediaStrip() {

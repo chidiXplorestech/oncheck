@@ -8,9 +8,9 @@ for (const viewport of [{ width: 320, height: 700 }, { width: 390, height: 844 }
     const planner = await page.locator('.ot-intro').boundingBox();
     expect(today).not.toBeNull();
     expect(planner).not.toBeNull();
-    expect(today!.y).toBeLessThan(300);
+    expect(today!.y).toBeLessThan(360);
     expect(today!.y + today!.height).toBeLessThan(planner!.y);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your day, in focus.');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('A little progress.');
     await expect(page.locator('.ot-shortcuts')).not.toHaveAttribute('open');
     const navigation = await page.locator('.sidebar .nav-btn').first().boundingBox();
     expect(navigation!.height).toBeGreaterThanOrEqual(44);

@@ -1,5 +1,9 @@
 # ONTRACK app and UI audit
 
+## Full identity redesign
+
+Following rejection of the first visual pass, the app received a new track monogram, lowercase wordmark, bundled Manrope typography and an ivory/charcoal/yellow identity. Navigation uses SVG icons, a desktop rail and a mobile dock. Plans now opens a searchable collection before its editor. Today uses one dominant focus panel with quieter upcoming sessions and a separate plan summary. Authentication, editors, Week, Vault, training, settings and dialogs share the new surfaces and controls. Favicon, install icon, manifest and theme metadata also use the new identity. See BRAND.md.
+
 ## Anything reference applied
 
 The 11 supplied onboarding screenshots informed a functional UI pass: Today is the first home section, followed by upcoming work and plans; the planner is compact and its optional shortcuts are collapsed. Neutral surfaces replace the full-page cobalt glass treatment, while cobalt remains the action/selection accent. Labels, body copy, buttons and keyboard focus are more readable. The floating dock retains the existing destinations and uses labelled, larger targets. Empty accounts have an inline first-plan action. A three-step, skippable Quick tour demonstrates focus, weekly planning and reviewing a proposed plan. Authentication keeps its existing behaviour with simpler form styling.

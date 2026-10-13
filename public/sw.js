@@ -1,4 +1,4 @@
-const CACHE = 'ontrack-shell-v2';
+const CACHE = 'ontrack-shell-v3';
 const CORE = ['./', './manifest.webmanifest', './ontrack-icon.svg', './ontrack-mark.svg'];
 
 self.addEventListener('install', event => {

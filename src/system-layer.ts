@@ -139,7 +139,7 @@ function patchShell() {
     profile.dataset.systemSettings = '1';
     profile.setAttribute('role', 'button');
     profile.setAttribute('tabindex', '0');
-    profile.setAttribute('aria-label', 'Open ONCHECK account settings');
+    profile.setAttribute('aria-label', 'Open ONTRACK account settings');
     const name = profile.querySelector<HTMLElement>('strong');
     const role = profile.querySelector<HTMLElement>('span');
     if (name) name.textContent = account.name || 'Account';
@@ -198,7 +198,7 @@ function openSettings() {
   dialog.innerHTML = `
     <div class="system-panel">
       <header class="system-head">
-        <div><span>ONCHECK / ACCOUNT</span><h2>Settings</h2><p>Local account, execution rules, weekly review and backup. Nothing here changes the dashboard design.</p></div>
+        <div><span>YOUR WORKSPACE</span><h2>Make it yours.</h2><p>Your account, daily rhythm, weekly review and backups.</p></div>
         <button class="system-close" type="button" aria-label="Close">×</button>
       </header>
       <div class="system-body">
@@ -210,7 +210,7 @@ function openSettings() {
         </nav>
 
         <section class="system-section active" data-system-section="account">
-          <h3>Local account</h3><p>This is your ONCHECK identity on this device. Cloud login is not being faked here.</p>
+          <h3>Your profile</h3><p>Choose how you appear in your workspace.</p>
           <form id="system-account-form">
             <div class="system-grid">
               <label class="system-field">Display name<input name="name" required value="${escapeHtml(account.name)}"></label>

@@ -53,6 +53,20 @@ jobs:
       - name: Verify offline artifact
         run: test -s dist/oncheck-offline.html
 
+      - name: Review production account entry
+        env:
+          ONTRACK_AUTH_VISUAL: '1'
+        run: npx playwright test tests/auth-visual.spec.ts --output auth-test-results
+
+      - name: Upload account review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ontrack-auth-review
+          path: auth-test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload offline phone build
         uses: actions/upload-artifact@v4
         with:

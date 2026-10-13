@@ -127,7 +127,7 @@ function render() {
   }
 
   authRoot.innerHTML = shell(`
-    <div class="auth-heading"><span>PERSONAL OS</span><h1>Your life. In execution.</h1><p>Sign in to continue to your ONTRACK workspace.</p></div>
+    <div class="auth-heading"><span>WELCOME BACK</span><h1>Pick up where<br>you left off.</h1><p>Your goals, your week, your next step. All in one place.</p></div>
     <form class="auth-form" data-auth-form="login">
       <label>Email<input name="email" type="email" autocomplete="email" value="${esc(emailDraft)}" required /></label>
       <label>Password<input name="password" type="password" autocomplete="current-password" required /></label>
