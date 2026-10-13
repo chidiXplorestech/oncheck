@@ -1,4 +1,7 @@
 import './workout-visuals.css';
+import trunkArtwork from './assets/workouts/monday-trunk.svg';
+import lowerBodyArtwork from './assets/workouts/wednesday-lower-body.svg';
+import armsArtwork from './assets/workouts/thursday-arms.svg';
 
 type DayId = 'monday' | 'wednesday' | 'thursday';
 
@@ -11,32 +14,30 @@ type WorkoutArtwork = {
   alt: string;
 };
 
-const base = import.meta.env.BASE_URL;
-
 const artwork: Record<DayId, WorkoutArtwork> = {
   monday: {
     day: 'MONDAY',
     area: 'TRUNK',
     focus: 'Neck · Chest · Core · Back · Shoulders',
     athlete: 'TRUNK',
-    src: `${base}workouts/monday-trunk-v2.webp`,
-    alt: 'Monday trunk training artwork in ONCHECK dark wide-banner styling.',
+    src: trunkArtwork,
+    alt: 'Abstract barbell artwork for trunk training.',
   },
   wednesday: {
     day: 'WEDNESDAY',
     area: 'LOWER BODY',
     focus: 'Hamstrings · Squats · Lunges · Calves · Thighs',
     athlete: 'LOWER BODY',
-    src: `${base}workouts/wednesday-lower-body-v2.webp`,
-    alt: 'Wednesday lower-body training artwork focused on the squat and leg area.',
+    src: lowerBodyArtwork,
+    alt: 'Abstract movement artwork for lower-body training.',
   },
   thursday: {
     day: 'THURSDAY',
     area: 'SIDES / ARMS',
     focus: 'Biceps · Triceps · Forearms · Power',
     athlete: 'SIDES / ARMS',
-    src: `${base}workouts/thursday-arms-v2.webp`,
-    alt: 'Thursday sides and arms training artwork in ONCHECK dark wide-banner styling.',
+    src: armsArtwork,
+    alt: 'Abstract dumbbell artwork for arm training.',
   },
 };
 

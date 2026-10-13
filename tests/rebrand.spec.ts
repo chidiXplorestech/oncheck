@@ -49,5 +49,15 @@ test('Training remains available from the redesigned plan collection', async ({ 
   await expect(page.locator('.training-visual-banner img')).toHaveJSProperty('complete', true);
   expect(await page.locator('.training-visual-banner img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   await expect(page.locator('.training-visual-banner img')).toHaveCSS('opacity', '1');
+  await page.locator('.training-visual-banner img').evaluate((image: HTMLImageElement) => image.decode());
   await page.locator('.training-space').screenshot({ path: testInfo.outputPath('training-phone.png') });
+  for (const day of ['wednesday', 'thursday']) {
+    await page.locator(`[data-workout-day="${day}"]`).click();
+    const image = page.locator('.training-visual-banner img');
+    await expect(page.locator('.training-visual-banner')).toHaveAttribute('data-day', day);
+    await image.evaluate((image: HTMLImageElement) => image.decode());
+    await page.locator('.training-visual-banner').scrollIntoViewIfNeeded();
+    await expect(image).toHaveCSS('opacity', '1');
+    await page.locator('.training-visual-banner').screenshot({ path: testInfo.outputPath(`training-${day}.png`) });
+  }
 });

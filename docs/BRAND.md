@@ -21,6 +21,8 @@ Manrope is bundled locally through Fontsource under its OFL licence. The offline
 
 Dark mode is the app's default, including account entry, native controls, sheets and installed-app chrome. Film grain is a small tiled SVG noise texture; sparse dust drifts behind working content and does not capture pointer events. GSAP animates view-entry headings and cards, and gently resolves uploaded/training imagery into place. It does not split or replace accessible text. Reveals run once per view, avoid replay on focus/completion updates and clean up removed views. Reduced-motion preferences disable JavaScript motion as well as CSS motion; hidden tabs pause the dust.
 
+Training banners use small abstract SVG artwork in the same palette, replacing truncated WebP assets. Vite embeds the SVGs, including in the offline build. Browser checks require full image decoding for all three workout days, rather than relying on readable image headers alone.
+
 The planner accepts up to 25,000 characters. Multi-section authored lists import without AI rewriting: every numbered action is preserved, and tables, calculations, links and other text stay in section notes. All sections are reviewed before a single batch save. Imports deliberately book no calendar sessions. Freeform AI planning supports multiple plans with validation, bounded requests and explicit quota/configuration/timeout errors; an explicit text-import action remains available when AI fails. Original dates and financial figures remain user-authored assumptions.
 
 Account data, existing plan records, uploaded media, calendar storage and authentication methods remain intact. The separate legacy/dated calendar issue recorded in UI-AUDIT.md remains outside the rebrand.

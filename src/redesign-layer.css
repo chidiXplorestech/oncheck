@@ -266,5 +266,9 @@ html,body{background:#171817!important}
 .auth-root::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .auth-stage{background:transparent!important}.auth-atmosphere{background:linear-gradient(145deg,#313628,#20231c);border:1px solid var(--ot-line)}
 .auth-atmosphere::after{opacity:.8}.auth-link{color:#c5ceb1}.auth-form input{background:var(--ot-surface)!important}
+.training-visual-banner{background:#20241b}
+.training-visual-banner img{filter:none;object-position:center;transform:none}
+.training-visual-shade{background:linear-gradient(90deg,#191d17b3 0%,#191d1726 45%,transparent 100%)}
+.training-visual-banner::after{background:linear-gradient(180deg,transparent 70%,#17181733)}
 .ot-thinking-stage{background:#171817f5;backdrop-filter:blur(12px)}
 @media(max-width:900px){.sidebar{background:#20221ff2!important}.nav-btn.active{color:#20221a!important}.ot-preview-item{padding:18px}.ot-plan-panel footer{border-top:1px solid var(--ot-line)}}

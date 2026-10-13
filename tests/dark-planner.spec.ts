@@ -116,6 +116,7 @@ test('dark texture stays behind controls and GSAP reveals headings and images', 
   await page.locator('.training-visual-banner').scrollIntoViewIfNeeded();
   await expect(page.locator('.training-visual-banner img')).toHaveAttribute('data-motion-image', 'revealed');
   await expect(page.locator('.training-visual-banner img')).toHaveCSS('opacity', '1');
+  await page.locator('.training-visual-banner img').evaluate((image: HTMLImageElement) => image.decode());
 });
 
 test('reduced motion keeps text images and textured controls immediately usable', async ({ page }, testInfo) => {
